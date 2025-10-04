@@ -131,3 +131,11 @@ func (s *Storage) GetGroupFiles(groupID int) ([]File, error) {
 
 	return files, nil
 }
+
+func (s *Storage) UpdateFileAction(fileID int, action string) error {
+	_, err := s.db.Exec(
+		"UPDATE files SET action = ? WHERE id = ?",
+		action, fileID,
+	)
+	return err
+}
