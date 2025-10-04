@@ -14,12 +14,11 @@ type Group struct {
 }
 
 type File struct {
-	ID         int
-	GroupID    int
-	Path       string
-	Resolution string
-	Filesize   int64
-	Action     string
+	ID       int
+	GroupID  int
+	Path     string
+	Filesize int64
+	Action   string
 }
 
 type Storage struct {
@@ -41,7 +40,6 @@ func New(dbPath string) (*Storage, error) {
 					id INTEGER PRIMARY KEY AUTOINCREMENT,
 				  group_id INTEGER,
 		      path TEXT,
-		      resolution TEXT,
 					filesize INTEGER,
 		      action TEXT DEFAULT 'pending',
 		      FOREIGN KEY(group_id) REFERENCES groups(id)
@@ -108,4 +106,28 @@ func (s *Storage) InsertSampleData() error {
 	s.CreateFile(gid2, "/photos/old/IMG_5678.jpg", 3500000)
 
 	return nil
+}
+
+func (s *Storage) GetGroupFiles(groupID int) ([]File, error) {
+	rows, err := s.db.Query(
+		"SELECT id, group_id, path, filesize, action FROM files WHERE group_id=?",
+		groupID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var files []File
+
+	for rows.Next() {
+		var f File
+		if err := rows.Scan(&f.ID, &f.GroupID, &f.Path, &f.Filesize, &f.Action); err != nil {
+			return nil, err
+		}
+		files = append(files, f)
+	}
+
+	return files, nil
 }

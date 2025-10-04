@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/fadykuzman/schluckauf/internal/loader"
 	"github.com/fadykuzman/schluckauf/internal/storage"
@@ -52,7 +53,7 @@ func main() {
 		}
 	}
 
-	http.HandleFunc("/api/groups", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("GET /api/groups", func(w http.ResponseWriter, r *http.Request) {
 		groups, err := store.ListGroups()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -64,6 +65,23 @@ func main() {
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
+	})
+
+	http.HandleFunc("GET /api/groups/{id}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		groupID, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "Invalid Group ID", http.StatusBadRequest)
+			return
+		}
+		files, err := store.GetGroupFiles(groupID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(files)
 	})
 
 	http.Handle("/", http.FileServer(http.Dir("./web")))
