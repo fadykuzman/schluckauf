@@ -1,13 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 
+	"github.com/fadykuzman/schluckauf/internal/handler"
 	"github.com/fadykuzman/schluckauf/internal/loader"
 	"github.com/fadykuzman/schluckauf/internal/storage"
 )
@@ -53,36 +52,12 @@ func main() {
 		}
 	}
 
-	http.HandleFunc("GET /api/groups", func(w http.ResponseWriter, r *http.Request) {
-		groups, err := store.ListGroups()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(groups)
-	})
+	h := handler.New(store)
 
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
-	})
-
-	http.HandleFunc("GET /api/groups/{id}", func(w http.ResponseWriter, r *http.Request) {
-		idStr := r.PathValue("id")
-		groupID, err := strconv.Atoi(idStr)
-		if err != nil {
-			http.Error(w, "Invalid Group ID", http.StatusBadRequest)
-			return
-		}
-		files, err := store.GetGroupFiles(groupID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(files)
-	})
+	http.HandleFunc("GET /api/groups", h.ListGroups)
+	http.HandleFunc("/health", h.Health)
+	http.HandleFunc("GET /api/groups/{id}", h.GetGroupFiles)
+	http.HandleFunc("/api/image", h.ServeImage)
 
 	http.Handle("/", http.FileServer(http.Dir("./web")))
 	fmt.Println("Server running on http://localhost:8080")

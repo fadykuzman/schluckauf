@@ -1,0 +1,73 @@
+package handler
+
+import (
+	"encoding/json"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+
+	"github.com/fadykuzman/schluckauf/internal/storage"
+)
+
+type Handler struct {
+	store *storage.Storage
+}
+
+func New(store *storage.Storage) *Handler {
+	return &Handler{store: store}
+}
+
+func (h *Handler) ListGroups(w http.ResponseWriter, r *http.Request) {
+	groups, err := h.store.ListGroups()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(groups)
+}
+
+func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+
+func (h *Handler) GetGroupFiles(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	groupID, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid Group ID", http.StatusBadRequest)
+		return
+	}
+	files, err := h.store.GetGroupFiles(groupID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(files)
+}
+
+func (h *Handler) ServeImage(w http.ResponseWriter, r *http.Request) {
+	requestedPath := r.URL.Query().Get("path")
+	if requestedPath == "" {
+		http.Error(w, "Missing path parameter", http.StatusBadRequest)
+		return
+	}
+
+	cleanPath := filepath.Clean(requestedPath)
+	absPath, err := filepath.Abs(cleanPath)
+	if err != nil {
+		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+
+	info, err := os.Stat(absPath)
+	if err != nil || info.IsDir() {
+		http.Error(w, "File not Found", http.StatusNotFound)
+		return
+	}
+
+	http.ServeFile(w, r, absPath)
+}
