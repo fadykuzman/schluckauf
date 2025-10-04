@@ -135,3 +135,5 @@ The keyboard-driven workflow is essential for speed - focus on making this seaml
 4. **Docker configuration**: Last step
 
 **Priority**: Functional MVP over polish. Get the keyboard-driven workflow working before adding features.
+- fit the instructions to the screen hight
+- don't provide code. first guidance
