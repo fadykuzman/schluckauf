@@ -71,3 +71,35 @@ func (h *Handler) ServeImage(w http.ResponseWriter, r *http.Request) {
 
 	http.ServeFile(w, r, absPath)
 }
+
+type UpdateActionRequest struct {
+	Action string `json:"action"` // "keep" or "trash"
+}
+
+func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
+	fidStr := r.PathValue("fid")
+	fileID, err := strconv.Atoi(fidStr)
+	if err != nil {
+		http.Error(w, "Invalid File ID", http.StatusBadRequest)
+	}
+
+	var req UpdateActionRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Action != "keep" && req.Action != "trash" {
+		http.Error(w, "Action must be 'keep' or 'trash'", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.store.UpdateFileAction(fileID, req.Action); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}

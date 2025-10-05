@@ -58,6 +58,7 @@ func main() {
 	http.HandleFunc("/health", h.Health)
 	http.HandleFunc("GET /api/groups/{id}", h.GetGroupFiles)
 	http.HandleFunc("/api/image", h.ServeImage)
+	http.HandleFunc("POST /api/groups/{id}/files/{fid}", h.UpdateFileAction)
 
 	http.Handle("/", http.FileServer(http.Dir("./web")))
 	fmt.Println("Server running on http://localhost:8080")
