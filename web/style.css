@@ -87,3 +87,44 @@ button {
 button:hover {
   background: #0056b3;
 }
+
+button.trash-button {
+  background: red;
+}
+
+.duplicate-image.to-delete {
+  opacity: 0.4;
+  border: 3px solid red;
+  position: relative;
+}
+
+.duplicate-image.to-delete::after {
+  content: "TRASH";
+  color: red;
+  font-weight: bold;
+  font-size: 20px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.duplicate-image.to-keep {
+  border: 3px solid green;
+  position: relative;
+}
+
+.duplicate-image.to-keep::after {
+  content: "KEEP";
+  color: green;
+  font-weight: bold;
+  font-size: 20px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 5px 10px;
+  border-radius: 5px;
+}
