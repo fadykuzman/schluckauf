@@ -61,10 +61,18 @@ function createImageDiv(file, index) {
 
   const duplicateImage = fileDiv.querySelector(".duplicate-image")
 
+  if (file.Action == "trash") {
+    duplicateImage.classList.remove("to-keep")
+    duplicateImage.classList.add("to-trash")
+  } else if (file.Action == "keep") {
+    duplicateImage.classList.remove("to-trash")
+    duplicateImage.classList.add("to-keep")
+  }
+
 
   const keepButton = fileDiv.querySelector(".keep-button");
   keepButton.onclick = async () => {
-    duplicateImage.classList.remove("to-delete")
+    duplicateImage.classList.remove("to-trash")
     duplicateImage.classList.add("to-keep")
 
     const response = await fetch(`/api/groups/${file.GroupID}/files/${file.ID}`, {
@@ -84,7 +92,7 @@ function createImageDiv(file, index) {
   const trashButton = fileDiv.querySelector(".trash-button")
   trashButton.onclick = async () => {
     duplicateImage.classList.remove("to-keep")
-    duplicateImage.classList.add("to-delete")
+    duplicateImage.classList.add("to-trash")
 
 
     const response = await fetch(`/api/groups/${file.GroupID}/files/${file.ID}`, {

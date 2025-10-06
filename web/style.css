@@ -92,13 +92,13 @@ button.trash-button {
   background: red;
 }
 
-.duplicate-image.to-delete {
+.duplicate-image.to-trash {
   opacity: 0.4;
   border: 3px solid red;
   position: relative;
 }
 
-.duplicate-image.to-delete::after {
+.duplicate-image.to-trash::after {
   content: "TRASH";
   color: red;
   font-weight: bold;
