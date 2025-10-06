@@ -46,6 +46,29 @@ async function showGroup(id) {
 
 function createImageDiv(file, index) {
   const fileDiv = document.createElement('div')
+
+  createImageElement(file, index, fileDiv)
+
+  const duplicateImage = fileDiv.querySelector(".duplicate-image")
+
+  applyActionState(duplicateImage, file.Action)
+
+  attachButtonHandlers(fileDiv, duplicateImage, file)
+  return fileDiv
+}
+
+function applyActionState(element, action) {
+  if (action == "trash") {
+    element.classList.remove("to-keep")
+    element.classList.add("to-trash")
+  } else if (action == "keep") {
+    element.classList.remove("to-trash")
+    element.classList.add("to-keep")
+  }
+
+}
+
+function createImageElement(file, index, fileDiv) {
   fileDiv.className = 'image-item';
 
   fileDiv.innerHTML = `
@@ -58,55 +81,32 @@ function createImageDiv(file, index) {
     </div>
       <div><button class="keep-button">Keep</button><button class="trash-button">Trash</button></div>
     `;
+}
 
-  const duplicateImage = fileDiv.querySelector(".duplicate-image")
-
-  if (file.Action == "trash") {
-    duplicateImage.classList.remove("to-keep")
-    duplicateImage.classList.add("to-trash")
-  } else if (file.Action == "keep") {
-    duplicateImage.classList.remove("to-trash")
-    duplicateImage.classList.add("to-keep")
-  }
-
-
+function attachButtonHandlers(fileDiv, duplicateImage, file) {
   const keepButton = fileDiv.querySelector(".keep-button");
   keepButton.onclick = async () => {
-    duplicateImage.classList.remove("to-trash")
-    duplicateImage.classList.add("to-keep")
-
-    const response = await fetch(`/api/groups/${file.GroupID}/files/${file.ID}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        action: "keep"
-      })
-    })
-
-    console.log(response)
-
+    const response = await updateFileAction(file, duplicateImage, "keep")
   }
 
   const trashButton = fileDiv.querySelector(".trash-button")
   trashButton.onclick = async () => {
-    duplicateImage.classList.remove("to-keep")
-    duplicateImage.classList.add("to-trash")
-
-
-    const response = await fetch(`/api/groups/${file.GroupID}/files/${file.ID}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: "trash"
-      })
-    })
+    const response = await updateFileAction(file, duplicateImage, "trash")
   }
+}
 
-  return fileDiv
+async function updateFileAction(file, duplicateImage, action) {
+  applyActionState(duplicateImage, action);
+
+  return await fetch(`/api/groups/${file.GroupID}/files/${file.ID}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: action
+    })
+  })
 }
 
 function formatBytes(bytes) {
