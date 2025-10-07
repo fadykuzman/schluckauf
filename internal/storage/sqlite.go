@@ -6,21 +6,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type Group struct {
-	ID        int
-	Hash      string
-	Size      int64
-	FileCount int
-}
-
-type File struct {
-	ID       int
-	GroupID  int
-	Path     string
-	Filesize int64
-	Action   string
-}
-
 type Storage struct {
 	db *sql.DB
 }
@@ -59,44 +44,6 @@ func (s *Storage) Close() error {
 	return s.db.Close()
 }
 
-func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, error) {
-	result, err := s.db.Exec(
-		"INSERT INTO groups (hash, size, file_count) VALUES (?, ?, ?)",
-		hash, size, fileCount,
-	)
-	if err != nil {
-		return 0, err
-	}
-	id, _ := result.LastInsertId()
-	return int(id), nil
-}
-
-func (s *Storage) CreateFile(groupID int, path string, filesize int64) error {
-	_, err := s.db.Exec(
-		"INSERT INTO files (group_id, path, filesize) VALUES (?, ?,?)",
-		groupID, path, filesize,
-	)
-	return err
-}
-
-func (s *Storage) ListGroups() ([]Group, error) {
-	rows, err := s.db.Query("SELECT id, hash, size, file_count FROM groups")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var groups []Group
-	for rows.Next() {
-		var g Group
-		if err := rows.Scan(&g.ID, &g.Hash, &g.Size, &g.FileCount); err != nil {
-			return nil, err
-		}
-		groups = append(groups, g)
-	}
-	return groups, nil
-}
-
 func (s *Storage) InsertSampleData() error {
 	gid, _ := s.CreateGroup("sample-hash-1", 2156432, 3)
 	s.CreateFile(gid, "/photos/IMG_1234.jpg", 2156432)
@@ -108,46 +55,4 @@ func (s *Storage) InsertSampleData() error {
 	s.CreateFile(gid2, "/photos/old/IMG_5678.jpg", 3500000)
 
 	return nil
-}
-
-func (s *Storage) GetGroupFiles(groupID int) ([]File, error) {
-	rows, err := s.db.Query(
-		"SELECT id, group_id, path, filesize, action FROM files WHERE group_id=?",
-		groupID,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	var files []File
-
-	for rows.Next() {
-		var f File
-		if err := rows.Scan(&f.ID, &f.GroupID, &f.Path, &f.Filesize, &f.Action); err != nil {
-			return nil, err
-		}
-		files = append(files, f)
-	}
-
-	return files, nil
-}
-
-func (s *Storage) UpdateFileAction(groupID int, fileID int, action string) error {
-	_, err := s.db.Exec(
-		"UPDATE files SET action = ? WHERE id = ?",
-		action, fileID,
-	)
-
-	_, errGroup := s.db.Exec(
-		" UPDATE groups SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-		groupID,
-	)
-
-	if err != nil {
-		return err
-	} else {
-		return errGroup
-	}
 }
