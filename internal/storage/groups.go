@@ -1,11 +1,17 @@
 package storage
 
 import (
+	_ "database/sql"
 	"time"
 
-	_ "database/sql"
-
 	_ "modernc.org/sqlite"
+)
+
+type GroupStatus string
+
+const (
+	StatusPending GroupStatus = "pending"
+	StatusDecided GroupStatus = "decided"
 )
 
 type Group struct {
@@ -14,7 +20,7 @@ type Group struct {
 	Size         int64
 	FileCount    int
 	UpdatedAt    *time.Time
-	Status       *string
+	Status       GroupStatus
 	PendingCount int
 	DecidedCount int
 }
