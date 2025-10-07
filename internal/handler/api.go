@@ -72,7 +72,7 @@ func (h *Handler) ServeImage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, absPath)
 }
 
-type UpdateActionRequest struct {
+type UpdateFileActionRequest struct {
 	Action storage.FileAction `json:"action"`
 }
 
@@ -89,7 +89,7 @@ func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid File ID", http.StatusBadRequest)
 	}
 
-	var req UpdateActionRequest
+	var req UpdateFileActionRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

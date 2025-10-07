@@ -39,9 +39,9 @@ func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, erro
 
 func (s *Storage) ListGroups() ([]Group, error) {
 	groupRows, err := s.db.Query(
-		`SELECT g.id, g.hash, g.size, g.file_count, g.updated_at 
+		`SELECT g.id, g.hash, g.size, g.file_count, g.updated_at,
 			CASE
-				WHEN SUM(CASE WHEN action = 'pending' THEN 1 ELSE 0 END) > 0
+				WHEN SUM(CASE WHEN f.action = 'pending' THEN 1 ELSE 0 END) > 0
 		    THEN 'pending'
 		    ELSE 'decided'
 		  END as status

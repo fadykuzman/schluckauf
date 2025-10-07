@@ -6,13 +6,17 @@ async function loadGroups() {
     const container = document.getElementById('groups-container');
     container.innerHTML = '';
 
+
     groups.forEach(group => {
       const item = document.createElement('div');
       item.className = 'group-item';
+      const reviewString = group.UpdatedAt ? `last reviewd at: ${group.UpdatedAt}` : "Not yet reviewed"
       item.innerHTML = `
       <strong>Group ${group.ID}</strong>:
       ${group.FileCount} files
       (${formatBytes(group.Size)} each)
+      <span class="status">${group.Status}</span>
+      <span class="reviewed">${reviewString}</span>
     `;
       item.onclick = () => showGroup(group.ID);
       container.appendChild(item)
@@ -28,7 +32,9 @@ async function showGroup(id) {
     const files = await fetchJSON(`/api/groups/${id}`);
 
     const container = document.getElementById('groups-container')
-    container.innerHTML = '<h2>Duplicate Group ' + id + '</h2>';
+    container.innerHTML = `
+      <h2 class='duplicate-group-title'>Duplicate Group ${id} </h2>
+    `;
 
     const imagesDiv = document.createElement('div');
     imagesDiv.className = 'images-grid';
@@ -43,19 +49,9 @@ async function showGroup(id) {
 
     imagesDiv.addEventListener('click', async (e) => {
       if (e.target.classList.contains('keep-button')) {
-        const fileDiv = e.target.closest('.image-item')
-        const fileId = parseInt(fileDiv.dataset.fileId)
-        const file = files.find(f => f.ID === fileId)
-        const duplicateImage = fileDiv.querySelector('.duplicate-image')
-
-        await updateFileAction(file, duplicateImage, 'keep')
+        await handleFileAction(e, files, 'keep')
       } else if (e.target.classList.contains('trash-button')) {
-        const fileDiv = e.target.closest('.image-item')
-        const fileId = parseInt(fileDiv.dataset.fileId)
-        const file = files.find(f => f.ID == fileId)
-        const duplicateImage = fileDiv.querySelector('.duplicate-image')
-
-        await updateFileAction(file, duplicateImage, 'trash')
+        await handleFileAction(e, files, 'trash')
       }
     })
 
@@ -68,6 +64,15 @@ async function showGroup(id) {
     console.error(error)
   }
 
+}
+
+async function handleFileAction(e, files, action) {
+  const fileDiv = e.target.closest('.image-item')
+  const fileId = parseInt(fileDiv.dataset.fileId)
+  const file = files.find(f => f.ID === fileId)
+  const duplicateImage = fileDiv.querySelector('.duplicate-image')
+
+  await updateFileAction(file, duplicateImage, action)
 }
 
 function createImageDiv(file, index) {
