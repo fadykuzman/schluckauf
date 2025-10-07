@@ -22,6 +22,11 @@ type Group struct {
 	Status    GroupStatus
 }
 
+type GroupStats struct {
+	Pending int
+	Decided int
+}
+
 func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, error) {
 	result, err := s.db.Exec(
 		"INSERT INTO groups (hash, size, file_count) VALUES (?, ?, ?)",
@@ -74,4 +79,48 @@ func (s *Storage) ListGroups() ([]Group, error) {
 		groups = append(groups, g)
 	}
 	return groups, nil
+}
+
+func (s *Storage) GetGroupStats() (GroupStats, error) {
+	rows, err := s.db.Query(`
+		SELECT status, COUNT(*) as count
+		FROM (
+		  SELECT g.id,
+				CASE
+		      WHEN SUM(CASE WHEN f.action = 'pending' THEN 1 ELSE 0 END) > 0
+		      THEN 'pending'
+		      ELSE 'decided'
+	 			END as status
+			FROM groups g
+		  LEFT JOIN files f ON g.id = f.group_id
+		  GROUP BY g.id
+		) as group_statuses
+		GROUP BY status
+		`)
+	if err != nil {
+		return GroupStats{}, err
+	}
+
+	defer rows.Close()
+
+	var gs GroupStats
+
+	for rows.Next() {
+		var status string
+		var count int
+
+		if err := rows.Scan(&status, &count); err != nil {
+			return GroupStats{}, err
+		}
+
+		switch status {
+		case "pending":
+			gs.Pending = count
+		case "decided":
+			gs.Decided = count
+		}
+
+	}
+
+	return gs, nil
 }
