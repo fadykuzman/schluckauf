@@ -41,6 +41,24 @@ async function showGroup(id) {
 
     container.appendChild(imagesDiv);
 
+    imagesDiv.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('keep-button')) {
+        const fileDiv = e.target.closest('.image-item')
+        const fileId = parseInt(fileDiv.dataset.fileId)
+        const file = files.find(f => f.ID === fileId)
+        const duplicateImage = fileDiv.querySelector('.duplicate-image')
+
+        await updateFileAction(file, duplicateImage, 'keep')
+      } else if (e.target.classList.contains('trash-button')) {
+        const fileDiv = e.target.closest('.image-item')
+        const fileId = parseInt(fileDiv.dataset.fileId)
+        const file = files.find(f => f.ID == fileId)
+        const duplicateImage = fileDiv.querySelector('.duplicate-image')
+
+        await updateFileAction(file, duplicateImage, 'trash')
+      }
+    })
+
     const backBtn = document.createElement('button');
     backBtn.textContent = 'Back to Groups';
     backBtn.onclick = loadGroups;
@@ -55,13 +73,15 @@ async function showGroup(id) {
 function createImageDiv(file, index) {
   const fileDiv = document.createElement('div')
 
+  fileDiv.dataset.fileId = file.ID
+  fileDiv.dataset.groupId = file.GroupID
+
   createImageElement(file, index, fileDiv)
 
   const duplicateImage = fileDiv.querySelector(".duplicate-image")
 
   applyActionState(duplicateImage, file.Action)
 
-  attachButtonHandlers(fileDiv, duplicateImage, file)
   return fileDiv
 }
 
@@ -96,18 +116,6 @@ function createImageElement(file, index, fileDiv) {
   const metaDataDiv = fileDiv.querySelector('.metadata')
   metaDataDiv.prepend(pathDiv)
 
-}
-
-function attachButtonHandlers(fileDiv, duplicateImage, file) {
-  const keepButton = fileDiv.querySelector(".keep-button");
-  keepButton.onclick = async () => {
-    await updateFileAction(file, duplicateImage, "keep")
-  }
-
-  const trashButton = fileDiv.querySelector(".trash-button")
-  trashButton.onclick = async () => {
-    await updateFileAction(file, duplicateImage, "trash")
-  }
 }
 
 async function updateFileAction(file, duplicateImage, action) {
