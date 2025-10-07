@@ -18,6 +18,12 @@ type File struct {
 	Action   FileAction
 }
 
+type FilesStats struct {
+	TotalPending int
+	TotalKeep    int
+	TotalTrash   int
+}
+
 func (s *Storage) CreateFile(groupID int, path string, filesize int64) (int, error) {
 	result, err := s.db.Exec(
 		"INSERT INTO files (group_id, path, filesize) VALUES (?, ?,?)",
@@ -70,4 +76,8 @@ func (s *Storage) UpdateFileAction(groupID int, fileID int, action string) error
 		return err
 	}
 	return errGroup
+}
+
+func (s *Storage) getFileStats(groupID int, fileID int, action string) (FilesStats, error) {
+	return FilesStats{}, nil
 }

@@ -15,14 +15,12 @@ const (
 )
 
 type Group struct {
-	ID           int
-	Hash         string
-	Size         int64
-	FileCount    int
-	UpdatedAt    *time.Time
-	Status       GroupStatus
-	PendingCount int
-	DecidedCount int
+	ID        int
+	Hash      string
+	Size      int64
+	FileCount int
+	UpdatedAt *time.Time
+	Status    GroupStatus
 }
 
 func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, error) {
@@ -56,7 +54,34 @@ func (s *Storage) ListGroups() ([]Group, error) {
 			&g.UpdatedAt); err != nil {
 			return nil, err
 		}
+
+		status, err := s.GetGroupStatus(g.ID)
+		if err != nil {
+			return nil, err
+		}
+		g.Status = status
 		groups = append(groups, g)
 	}
 	return groups, nil
+}
+
+func (s *Storage) GetGroupStatus(groupID int) (GroupStatus, error) {
+	row := s.db.QueryRow(
+		`SELECT 
+			CASE
+				WHEN SUM(CASE WHEN action = 'pending' THEN 1 ELSE 0 END) > 0
+		    THEN 'pending'
+		    ELSE 'decided'
+		  END as group_status
+		 FROM files 
+		 WHERE group_id = ?
+		`, groupID,
+	)
+
+	var status string
+	if err := row.Scan(&status); err != nil {
+		return "", err
+	}
+
+	return GroupStatus(status), nil
 }
