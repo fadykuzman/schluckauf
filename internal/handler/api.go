@@ -73,7 +73,7 @@ func (h *Handler) ServeImage(w http.ResponseWriter, r *http.Request) {
 }
 
 type UpdateActionRequest struct {
-	Action string `json:"action"` // "keep" or "trash"
+	Action storage.FileAction `json:"action"`
 }
 
 func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +96,7 @@ func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Action != "keep" && req.Action != "trash" {
+	if req.Action != storage.ActionKeep && req.Action != storage.ActionTrash {
 		http.Error(w, "Action must be 'keep' or 'trash'", http.StatusBadRequest)
 		return
 	}
