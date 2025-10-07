@@ -1,3 +1,4 @@
+// Package handler provides REST API operations for duplicate photo groups and files
 package handler
 
 import (
