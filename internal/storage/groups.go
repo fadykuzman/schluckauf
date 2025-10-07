@@ -48,6 +48,9 @@ func (s *Storage) ListGroups() ([]Group, error) {
 		FROM groups g
 		LEFT JOIN files f ON g.id = f.group_id
 		GROUP BY g.id
+		ORDER BY
+		  CASE WHEN status = 'pending' THEN 0 ELSE 1 END,
+		  updated_at DESC NULLS LAST
 		`)
 	if err != nil {
 		return nil, err
