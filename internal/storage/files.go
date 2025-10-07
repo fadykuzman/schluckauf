@@ -31,6 +31,30 @@ func (s *Storage) CreateFile(groupID int, path string, filesize int64) (int, err
 	return int(id), err
 }
 
+func (s *Storage) GetGroupFiles(groupID int) ([]File, error) {
+	rows, err := s.db.Query(
+		"SELECT id, group_id, path, filesize, action FROM files WHERE group_id=?",
+		groupID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var files []File
+
+	for rows.Next() {
+		var f File
+		if err := rows.Scan(&f.ID, &f.GroupID, &f.Path, &f.Filesize, &f.Action); err != nil {
+			return nil, err
+		}
+		files = append(files, f)
+	}
+
+	return files, nil
+}
+
 func (s *Storage) UpdateFileAction(groupID int, fileID int, action string) error {
 	_, err := s.db.Exec(
 		"UPDATE files SET action = ? WHERE id = ?",

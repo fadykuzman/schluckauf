@@ -60,27 +60,3 @@ func (s *Storage) ListGroups() ([]Group, error) {
 	}
 	return groups, nil
 }
-
-func (s *Storage) GetGroupFiles(groupID int) ([]File, error) {
-	rows, err := s.db.Query(
-		"SELECT id, group_id, path, filesize, action FROM files WHERE group_id=?",
-		groupID,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	var files []File
-
-	for rows.Next() {
-		var f File
-		if err := rows.Scan(&f.ID, &f.GroupID, &f.Path, &f.Filesize, &f.Action); err != nil {
-			return nil, err
-		}
-		files = append(files, f)
-	}
-
-	return files, nil
-}
