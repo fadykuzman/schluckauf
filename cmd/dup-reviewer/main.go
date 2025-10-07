@@ -43,7 +43,7 @@ func main() {
 				}
 
 				for _, filePath := range group.Files {
-					if err := store.CreateFile(gid, filePath, group.Size); err != nil {
+					if _, err := store.CreateFile(gid, filePath, group.Size); err != nil {
 						log.Printf("Warning: failed to create file: %v", err)
 					}
 				}
