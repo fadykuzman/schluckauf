@@ -38,7 +38,17 @@ func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, erro
 }
 
 func (s *Storage) ListGroups() ([]Group, error) {
-	groupRows, err := s.db.Query("SELECT id, hash, size, file_count, updated_at FROM groups")
+	groupRows, err := s.db.Query(
+		`SELECT g.id, g.hash, g.size, g.file_count, g.updated_at 
+			CASE
+				WHEN SUM(CASE WHEN action = 'pending' THEN 1 ELSE 0 END) > 0
+		    THEN 'pending'
+		    ELSE 'decided'
+		  END as status
+		FROM groups g
+		LEFT JOIN files f ON g.id = f.group_id
+		GROUP BY g.id
+		`)
 	if err != nil {
 		return nil, err
 	}
@@ -53,37 +63,12 @@ func (s *Storage) ListGroups() ([]Group, error) {
 			&g.Hash,
 			&g.Size,
 			&g.FileCount,
-			&g.UpdatedAt); err != nil {
+			&g.UpdatedAt,
+			&g.Status,
+		); err != nil {
 			return nil, err
 		}
-
-		status, err := s.GetGroupStatus(g.ID)
-		if err != nil {
-			return nil, err
-		}
-		g.Status = status
 		groups = append(groups, g)
 	}
 	return groups, nil
-}
-
-func (s *Storage) GetGroupStatus(groupID int) (GroupStatus, error) {
-	row := s.db.QueryRow(
-		`SELECT 
-			CASE
-				WHEN SUM(CASE WHEN action = 'pending' THEN 1 ELSE 0 END) > 0
-		    THEN 'pending'
-		    ELSE 'decided'
-		  END as group_status
-		 FROM files 
-		 WHERE group_id = ?
-		`, groupID,
-	)
-
-	var status string
-	if err := row.Scan(&status); err != nil {
-		return "", err
-	}
-
-	return GroupStatus(status), nil
 }
