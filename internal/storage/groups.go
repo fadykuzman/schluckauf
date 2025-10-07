@@ -37,14 +37,6 @@ func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, erro
 	return int(id), nil
 }
 
-func (s *Storage) CreateFile(groupID int, path string, filesize int64) error {
-	_, err := s.db.Exec(
-		"INSERT INTO files (group_id, path, filesize) VALUES (?, ?,?)",
-		groupID, path, filesize,
-	)
-	return err
-}
-
 func (s *Storage) ListGroups() ([]Group, error) {
 	groupRows, err := s.db.Query("SELECT id, hash, size, file_count, updated_at FROM groups")
 	if err != nil {
