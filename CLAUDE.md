@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Schluckauf** (German for "hiccup") is a privacy-first, self-hosted web application for reviewing and managing duplicate photos found by Czkawka CLI. The goal is to provide a fast, keyboard-driven interface to review duplicate groups and decide which files to keep or delete.
 
 **Core Principles:**
+
 - Privacy-first: No external API calls, no telemetry, all data stored locally
 - Simplicity: Vanilla stack (Go stdlib, vanilla HTML/CSS/JS, SQLite)
 - Speed: Keyboard-driven workflow to review 100+ groups in under 5 minutes
@@ -21,6 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture
 
 ### High-Level Flow
+
 1. Czkawka CLI scans photos and outputs JSON with duplicate groups
 2. Loader parses JSON and stores groups/files in SQLite
 3. HTTP server serves web UI and API endpoints
@@ -29,6 +31,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 6. State persists in SQLite for session resumption
 
 ### Module Structure
+
 ```
 cmd/dup-reviewer/main.go       # Entry point, HTTP server setup
 internal/loader/czkawka.go     # Parse czkawka JSON output
@@ -39,6 +42,7 @@ web/                           # Static frontend files
 ```
 
 ### Database Schema
+
 ```sql
 groups: id, hash (unique), size, file_count
 files: id, group_id, path, resolution, filesize, action ('keep'|'trash'|'pending')
@@ -58,12 +62,14 @@ files: id, group_id, path, resolution, filesize, action ('keep'|'trash'|'pending
 ## Development Commands
 
 ### Running locally
+
 ```bash
 go run cmd/dup-reviewer/main.go
 # Server runs on http://localhost:8080
 ```
 
 ### Docker deployment
+
 ```bash
 docker-compose up -d
 
@@ -75,7 +81,9 @@ docker-compose --profile scan run czkawka \
 ## Critical Security Requirements
 
 ### Path Traversal Protection
+
 All image serving MUST validate paths to prevent directory traversal attacks:
+
 ```go
 func validateImagePath(requestedPath, baseDir string) error {
     clean := filepath.Clean(requestedPath)
@@ -90,11 +98,13 @@ func validateImagePath(requestedPath, baseDir string) error {
 ```
 
 ### Docker Security
+
 - Run as non-root user (UID 1000)
 - Mount `/photos` as read-only
 - No outbound network access needed
 
 ### Privacy (GDPR Compliance)
+
 - ❌ No external API calls
 - ❌ No telemetry/analytics
 - ✅ Read-only access to photos
@@ -105,6 +115,7 @@ func validateImagePath(requestedPath, baseDir string) error {
 ## UI/UX Requirements
 
 ### Keyboard Shortcuts (Priority!)
+
 - `1-9`: Select image in group
 - `K`: Keep selected image
 - `D`: Trash selected image
@@ -113,6 +124,7 @@ func validateImagePath(requestedPath, baseDir string) error {
 The keyboard-driven workflow is essential for speed - focus on making this seamless.
 
 ### Display Requirements
+
 - Show duplicate groups one at a time
 - Display images side-by-side with metadata (resolution, size, path)
 - Progress indicator: "Group X of Y"
@@ -135,5 +147,7 @@ The keyboard-driven workflow is essential for speed - focus on making this seaml
 4. **Docker configuration**: Last step
 
 **Priority**: Functional MVP over polish. Get the keyboard-driven workflow working before adding features.
+
 - fit the instructions to the screen hight
 - don't provide code. first guidance
+

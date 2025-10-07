@@ -77,6 +77,12 @@ type UpdateActionRequest struct {
 }
 
 func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
+	gidStr := r.PathValue("gid")
+	groupID, gerr := strconv.Atoi(gidStr)
+	if gerr != nil {
+		http.Error(w, "Invalid groupID", http.StatusBadRequest)
+	}
+
 	fidStr := r.PathValue("fid")
 	fileID, err := strconv.Atoi(fidStr)
 	if err != nil {
@@ -95,7 +101,7 @@ func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.store.UpdateFileAction(fileID, req.Action); err != nil {
+	if err := h.store.UpdateFileAction(groupID, fileID, req.Action); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

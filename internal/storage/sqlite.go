@@ -35,7 +35,9 @@ func New(dbPath string) (*Storage, error) {
 		      id INTEGER PRIMARY KEY AUTOINCREMENT,
 		      hash TEXT UNIQUE,
 		      size INTEGER,
-					file_count INTEGER);
+					file_count INTEGER,
+		      updated_at TIMESTAMP NULL
+		);
 		  CREATE TABLE IF NOT EXISTS files (
 					id INTEGER PRIMARY KEY AUTOINCREMENT,
 				  group_id INTEGER,
@@ -132,10 +134,20 @@ func (s *Storage) GetGroupFiles(groupID int) ([]File, error) {
 	return files, nil
 }
 
-func (s *Storage) UpdateFileAction(fileID int, action string) error {
+func (s *Storage) UpdateFileAction(groupID int, fileID int, action string) error {
 	_, err := s.db.Exec(
 		"UPDATE files SET action = ? WHERE id = ?",
 		action, fileID,
 	)
-	return err
+
+	_, errGroup := s.db.Exec(
+		" UPDATE groups SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+		groupID,
+	)
+
+	if err != nil {
+		return err
+	} else {
+		return errGroup
+	}
 }
