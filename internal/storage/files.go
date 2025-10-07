@@ -18,12 +18,6 @@ type File struct {
 	Action   FileAction
 }
 
-type FilesStats struct {
-	TotalPending int
-	TotalKeep    int
-	TotalTrash   int
-}
-
 func (s *Storage) CreateFile(groupID int, path string, filesize int64) (int, error) {
 	result, err := s.db.Exec(
 		"INSERT INTO files (group_id, path, filesize) VALUES (?, ?,?)",
@@ -33,7 +27,10 @@ func (s *Storage) CreateFile(groupID int, path string, filesize int64) (int, err
 		return 0, err
 	}
 
-	id, _ := result.LastInsertId()
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
 	return int(id), err
 }
 
@@ -61,7 +58,7 @@ func (s *Storage) GetGroupFiles(groupID int) ([]File, error) {
 	return files, nil
 }
 
-func (s *Storage) UpdateFileAction(groupID int, fileID int, action string) error {
+func (s *Storage) UpdateFileAction(groupID int, fileID int, action FileAction) error {
 	_, err := s.db.Exec(
 		"UPDATE files SET action = ? WHERE id = ?",
 		action, fileID,
@@ -76,8 +73,4 @@ func (s *Storage) UpdateFileAction(groupID int, fileID int, action string) error
 		return err
 	}
 	return errGroup
-}
-
-func (s *Storage) getFileStats(groupID int, fileID int, action string) (FilesStats, error) {
-	return FilesStats{}, nil
 }

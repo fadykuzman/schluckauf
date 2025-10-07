@@ -1,7 +1,6 @@
 package storage
 
 import (
-	_ "database/sql"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -31,7 +30,10 @@ func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, erro
 	if err != nil {
 		return 0, err
 	}
-	id, _ := result.LastInsertId()
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
 	return int(id), nil
 }
 
