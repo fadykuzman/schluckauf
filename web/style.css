@@ -140,3 +140,35 @@ button.trash-button {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0, 0.1);
   z-index: 1000;
 }
+
+.groups-stats {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+}
+
+.pending,
+.decided {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  text-transform: capitalize;
+}
+
+.pending {
+  background-color: #f4b400;
+  color: #222;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.decided {
+  background: #2e7d32;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

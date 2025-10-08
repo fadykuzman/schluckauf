@@ -1,6 +1,9 @@
-async function loadGroups() {
-  try {
 
+async function loadGroups() {
+  var groupContainer = document.querySelector('.group-detail-view')
+  groupContainer.hidden = true
+
+  try {
     const groups = await fetchJSON('/api/groups')
 
     const container = document.getElementById('groups-container');
@@ -31,21 +34,21 @@ async function showGroup(id) {
   try {
     const files = await fetchJSON(`/api/groups/${id}`);
 
-    const container = document.getElementById('groups-container')
-    container.innerHTML = `
-      <h2 class='duplicate-group-title'>Duplicate Group ${id} </h2>
-    `;
+    var groupContainer = document.querySelector('.group-detail-view')
+    groupContainer.hidden = false
 
-    const imagesDiv = document.createElement('div');
-    imagesDiv.className = 'images-grid';
+    var groupTitle = document.querySelector('.duplicate-group-title')
 
+    groupTitle.textContent = `Duplicate Group ${id}`
+
+    const imagesDiv = document.querySelector('.images-grid')
+
+    imagesDiv.innerHTML = ''
     files.forEach((file, index) => {
       const fileDiv = createImageDiv(file, index)
 
       imagesDiv.appendChild(fileDiv)
     });
-
-    container.appendChild(imagesDiv);
 
     imagesDiv.addEventListener('click', async (e) => {
       if (e.target.classList.contains('keep-button')) {
@@ -55,10 +58,8 @@ async function showGroup(id) {
       }
     })
 
-    const backBtn = document.createElement('button');
-    backBtn.textContent = 'Back to Groups';
+    const backBtn = document.querySelector('.back-to-groups-button');
     backBtn.onclick = loadGroups;
-    container.appendChild(backBtn);
   } catch (error) {
     showError('Failed to load Group')
     console.error(error)
@@ -153,4 +154,30 @@ function formatBytes(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
+async function loadGroupStatus() {
+  try {
+    const stats = await fetchJSON("/api/groups/stats")
+    console.log(stats)
+    const header = document.querySelector('#groups-list h2')
+    const statsContainer = document.createElement('div')
+    statsContainer.classList.add('group-stats')
+    header.after(statsContainer)
+
+    const pending = document.createElement('span')
+    pending.textContent = `Pending: ${stats.Pending}`
+    pending.classList.add('pending')
+    statsContainer.appendChild(pending)
+
+    const decided = document.createElement('span')
+    decided.textContent = `decided: ${stats.Decided}`
+    decided.classList.add('decided')
+    statsContainer.appendChild(decided)
+
+
+  } catch (error) {
+    showError("Failed to load Groups Statistics")
+    console.error(error)
+  }
+}
+loadGroupStatus()
 loadGroups()
