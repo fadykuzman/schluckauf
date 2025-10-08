@@ -20,8 +20,8 @@ async function loadGroups() {
       <div class="group-info">
         ${group.FileCount} files
         (${formatBytes(group.Size)} each)
-        <span class="status">${group.Status}</span>
-        <span class="reviewed">${reviewString}</span>
+        <span class="group-status" data-status="${group.Status.toLowerCase()}">${group.Status}</span>
+        <span class="group-updated-at">${reviewString}</span>
       </div>
     `;
       item.onclick = () => showGroup(group.ID);

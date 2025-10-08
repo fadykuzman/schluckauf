@@ -70,3 +70,14 @@ func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }
+
+func (h *Handler) TrashFiles(w http.ResponseWriter, r *http.Request) {
+	filesToTrash, err := h.store.TrashFiles()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(filesToTrash)
+}

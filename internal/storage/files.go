@@ -74,3 +74,34 @@ func (s *Storage) UpdateFileAction(groupID int, fileID int, action FileAction) e
 	}
 	return errGroup
 }
+
+type FileToTrash struct {
+	ID int
+}
+
+type FilesToTrash struct {
+	Files []FileToTrash
+}
+
+func (s *Storage) TrashFiles() (FilesToTrash, error) {
+	rows, err := s.db.Query(`
+		SELECT id FROM files WHERE action = 'trash'
+		`)
+	if err != nil {
+		return FilesToTrash{}, err
+	}
+
+	defer rows.Close()
+
+	var files []FileToTrash
+
+	for rows.Next() {
+		var f FileToTrash
+		if err := rows.Scan(&f.ID); err != nil {
+			return FilesToTrash{}, err
+		}
+		files = append(files, f)
+	}
+
+	return FilesToTrash{files}, nil
+}
