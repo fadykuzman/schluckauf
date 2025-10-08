@@ -53,6 +53,13 @@ h1 {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.group-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
 .images-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

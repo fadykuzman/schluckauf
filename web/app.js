@@ -16,7 +16,6 @@ async function loadGroups() {
       const reviewString = group.UpdatedAt ? `last reviewd at: ${group.UpdatedAt}` : "Not yet reviewed"
 
       item.innerHTML = `
-      <strong>Group ${group.ID}</strong>:
       <img src='/api/image?path=${encodeURIComponent(group.ThumbnailPath)}'>
       <div class="group-info">
         ${group.FileCount} files
