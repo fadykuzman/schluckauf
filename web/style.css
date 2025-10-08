@@ -23,6 +23,13 @@ h1 {
   color: #333;
 }
 
+#groups-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
 #group-list {
   background: white;
   padding: 20px;
@@ -31,16 +38,19 @@ h1 {
 }
 
 .group-item {
-  padding: 15px;
-  margin: 10px 0;
-  background: #f9f9f9;
-  border-radius: 4px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 
 .group-item:hover {
-  background: #e9e9e9;
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .images-grid {

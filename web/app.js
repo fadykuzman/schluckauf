@@ -14,12 +14,16 @@ async function loadGroups() {
       const item = document.createElement('div');
       item.className = 'group-item';
       const reviewString = group.UpdatedAt ? `last reviewd at: ${group.UpdatedAt}` : "Not yet reviewed"
+
       item.innerHTML = `
       <strong>Group ${group.ID}</strong>:
-      ${group.FileCount} files
-      (${formatBytes(group.Size)} each)
-      <span class="status">${group.Status}</span>
-      <span class="reviewed">${reviewString}</span>
+      <img src='/api/image?path=${encodeURIComponent(group.ThumbnailPath)}'>
+      <div class="group-info">
+        ${group.FileCount} files
+        (${formatBytes(group.Size)} each)
+        <span class="status">${group.Status}</span>
+        <span class="reviewed">${reviewString}</span>
+      </div>
     `;
       item.onclick = () => showGroup(group.ID);
       container.appendChild(item)

@@ -14,12 +14,13 @@ const (
 )
 
 type Group struct {
-	ID        int
-	Hash      string
-	Size      int64
-	FileCount int
-	UpdatedAt *time.Time
-	Status    GroupStatus
+	ID            int
+	Hash          string
+	Size          int64
+	FileCount     int
+	UpdatedAt     *time.Time
+	Status        GroupStatus
+	ThumbnailPath string
 }
 
 type GroupStats struct {
@@ -44,7 +45,7 @@ func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, erro
 
 func (s *Storage) ListGroups() ([]Group, error) {
 	groupRows, err := s.db.Query(
-		`SELECT g.id, g.hash, g.size, g.file_count, g.updated_at,
+		`SELECT g.id, g.hash, g.size, g.file_count, g.updated_at, f.path as thumbnail_path,
 			CASE
 				WHEN SUM(CASE WHEN f.action = 'pending' THEN 1 ELSE 0 END) > 0
 		    THEN 'pending'
@@ -52,6 +53,7 @@ func (s *Storage) ListGroups() ([]Group, error) {
 		  END as status
 		FROM groups g
 		LEFT JOIN files f ON g.id = f.group_id
+		WHERE f.id = (SELECT MIN(id) FROM files WHERE group_id = g.id)
 		GROUP BY g.id
 		ORDER BY
 		  CASE WHEN status = 'pending' THEN 0 ELSE 1 END,
@@ -72,6 +74,7 @@ func (s *Storage) ListGroups() ([]Group, error) {
 			&g.Size,
 			&g.FileCount,
 			&g.UpdatedAt,
+			&g.ThumbnailPath,
 			&g.Status,
 		); err != nil {
 			return nil, err
