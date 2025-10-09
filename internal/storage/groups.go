@@ -24,8 +24,9 @@ type Group struct {
 }
 
 type GroupStats struct {
-	Pending int
-	Decided int
+	Pending           int
+	Decided           int
+	FilesToTrashCount int
 }
 
 func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, error) {
@@ -122,7 +123,12 @@ func (s *Storage) GetGroupStats() (GroupStats, error) {
 		case "decided":
 			gs.Decided = count
 		}
+	}
 
+	row := s.db.QueryRow("SELECT COUNT(*) FROM files WHERE action = 'trash'")
+
+	if err := row.Scan(&gs.FilesToTrashCount); err != nil {
+		return gs, err
 	}
 
 	return gs, nil

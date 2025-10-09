@@ -160,21 +160,31 @@ function formatBytes(bytes) {
 async function loadGroupStatus() {
   try {
     const stats = await fetchJSON("/api/groups/stats")
-    console.log(stats)
-    const header = document.querySelector('#groups-list h2')
-    const statsContainer = document.createElement('div')
-    statsContainer.classList.add('group-stats')
-    header.after(statsContainer)
 
-    const pending = document.createElement('span')
-    pending.textContent = `Pending: ${stats.Pending}`
-    pending.classList.add('pending')
-    statsContainer.appendChild(pending)
+    const moveToTrashBtn = document.getElementById('move-to-trash-button')
+    moveToTrashBtn.disabled = stats.FilesToTrashCount === 0
+    const trashCountSpan = document.getElementById('trash-count')
+    trashCountSpan.textContent = stats.FilesToTrashCount
 
-    const decided = document.createElement('span')
-    decided.textContent = `decided: ${stats.Decided}`
-    decided.classList.add('decided')
-    statsContainer.appendChild(decided)
+    moveToTrashBtn.onclick = async () => {
+      try {
+        moveToTrashBtn.disabled = true
+        trashCountSpan.textContent = 'Processing...'
+
+        await fetchJSON('/api/files/actions/trash', {
+          method: 'POST'
+        })
+
+        loadGroupStatus();
+      } catch (error) {
+        console.error(error)
+        showError("Failed to move files to trash")
+      }
+    }
+
+    document.getElementById('pending-count').textContent = stats.Pending
+    document.getElementById('decided-count').textContent = stats.Decided
+
 
 
   } catch (error) {

@@ -11,11 +11,16 @@
 <body>
   <header>
     <h1>Schluckauf - Duplicate Reviewer</h1>
+    <button type="submit" id="move-to-trash-button">Move to Trash (<span id="trash-count">0</span>)</button>
   </header>
 
   <main>
     <div id="groups-list">
       <h2>Duplicate Groups</h2>
+      <div class="groups-stats">
+        <span class="pending">Pending: <span id="pending-count">0</span></span>
+        <span class="decided">Decided: <span id="decided-count">0</span></span>
+      </div>
       <div id="groups-container">
       </div>
       <div class="group-detail-view" hidden>

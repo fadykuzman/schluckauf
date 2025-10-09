@@ -2,6 +2,7 @@ package storage
 
 import (
 	_ "database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -116,7 +117,7 @@ func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
 		destPath := filepath.Join("./trash", timestamp, f.FilePath)
 		os.MkdirAll(filepath.Dir(destPath), 0o755)
 		if err := os.Rename(f.FilePath, destPath); err != nil {
-			errors = append(errors, "Couldn't move file ${f.FilePath} to trash")
+			errors = append(errors, fmt.Sprintf("Couldn't move file %s to trash", f.FilePath))
 			failedCount++
 		} else {
 			movedCount++

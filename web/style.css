@@ -23,6 +23,11 @@ h1 {
   color: #333;
 }
 
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 #groups-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
