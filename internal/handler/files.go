@@ -72,12 +72,12 @@ func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) TrashFiles(w http.ResponseWriter, r *http.Request) {
-	filesToTrash, err := h.store.TrashFiles()
+	response, err := h.store.TrashFiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(filesToTrash)
+	json.NewEncoder(w).Encode(response)
 }

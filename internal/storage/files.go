@@ -1,6 +1,11 @@
 package storage
 
-import _ "database/sql"
+import (
+	_ "database/sql"
+	"os"
+	"path/filepath"
+	"time"
+)
 
 type FileAction string
 
@@ -76,32 +81,53 @@ func (s *Storage) UpdateFileAction(groupID int, fileID int, action FileAction) e
 }
 
 type FileToTrash struct {
-	ID int
+	ID       int
+	FilePath string
 }
 
-type FilesToTrash struct {
-	Files []FileToTrash
+type TrashFilesResponse struct {
+	MovedCount  int
+	FailedCount int
+	Errors      []string
 }
 
-func (s *Storage) TrashFiles() (FilesToTrash, error) {
+func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
 	rows, err := s.db.Query(`
-		SELECT id FROM files WHERE action = 'trash'
+		SELECT id, path FROM files WHERE action = 'trash'
 		`)
 	if err != nil {
-		return FilesToTrash{}, err
+		return TrashFilesResponse{}, err
 	}
 
 	defer rows.Close()
 
-	var files []FileToTrash
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+
+	var movedCount int
+	var failedCount int
+	var errors []string
 
 	for rows.Next() {
 		var f FileToTrash
-		if err := rows.Scan(&f.ID); err != nil {
-			return FilesToTrash{}, err
+		if err := rows.Scan(&f.ID, &f.FilePath); err != nil {
+			return TrashFilesResponse{}, err
 		}
-		files = append(files, f)
+
+		destPath := filepath.Join("./trash", timestamp, f.FilePath)
+		os.MkdirAll(filepath.Dir(destPath), 0o755)
+		if err := os.Rename(f.FilePath, destPath); err != nil {
+			errors = append(errors, "Couldn't move file ${f.FilePath} to trash")
+			failedCount++
+		} else {
+			movedCount++
+		}
 	}
 
-	return FilesToTrash{files}, nil
+	response := TrashFilesResponse{
+		MovedCount:  movedCount,
+		FailedCount: failedCount,
+		Errors:      errors,
+	}
+
+	return response, nil
 }
