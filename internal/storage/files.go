@@ -91,6 +91,7 @@ type TrashFilesResponse struct {
 	MovedCount      int
 	FailedCount     int
 	PartialFailures int
+	TotalCount      int
 	Errors          []string
 }
 
@@ -142,6 +143,7 @@ func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
 		MovedCount:      movedCount,
 		FailedCount:     failedCount,
 		PartialFailures: partialFailures,
+		TotalCount:      movedCount + failedCount + partialFailures,
 		Errors:          errors,
 	}
 

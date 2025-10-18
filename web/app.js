@@ -180,9 +180,21 @@ function setupTrashButton() {
       moveToTrashBtn.disabled = true
       trashCountSpan.textContent = 'Processing...'
 
-      await fetchJSON('/api/files/actions/trash', {
+      const response = await fetchJSON('/api/files/actions/trash', {
         method: 'POST'
       })
+
+      if (response.MovedCount > 0) {
+        showSuccess('Successfully moved ${response.MovedCount} of ${response.TotalCount} to trash')
+      }
+
+      if (response.FileCount > 0) {
+        showError('Failed to move ${response.FileCount} files to trash')
+      }
+
+      if (response.PartialFailures > 0) {
+        console.warn("")
+      }
 
       loadGroupStatus();
     } catch (error) {
