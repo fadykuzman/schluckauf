@@ -7,6 +7,14 @@ function showError(message) {
   setTimeout(() => errorDiv.remove(), 5000)
 }
 
+function showSuccess(message) {
+  const successDiv = document.createElememt('div')
+  successDiv.className = 'success-toast'
+  successDiv.textContent = message
+  document.body.appendChild(successDiv)
+
+  setTimeout(() => successDiv.remove(), 5000)
+}
 async function fetchJSON(url, options = {}) {
   const response = await fetch(url, options)
 
