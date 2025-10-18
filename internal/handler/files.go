@@ -42,12 +42,14 @@ func (h *Handler) UpdateFileAction(w http.ResponseWriter, r *http.Request) {
 	groupID, gerr := strconv.Atoi(gidStr)
 	if gerr != nil {
 		http.Error(w, "Invalid groupID", http.StatusBadRequest)
+		return
 	}
 
 	fidStr := r.PathValue("fid")
 	fileID, err := strconv.Atoi(fidStr)
 	if err != nil {
 		http.Error(w, "Invalid File ID", http.StatusBadRequest)
+		return
 	}
 
 	var req UpdateFileActionRequest
