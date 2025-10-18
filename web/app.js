@@ -13,7 +13,7 @@ async function loadGroups() {
     groups.forEach(group => {
       const item = document.createElement('div');
       item.className = 'group-item';
-      const reviewString = group.UpdatedAt ? `last reviewd at: ${group.UpdatedAt}` : "Not yet reviewed"
+      const reviewString = group.UpdatedAt ? `last reviewed at: ${group.UpdatedAt}` : "Not yet reviewed"
 
       item.innerHTML = `
       <img src='/api/image?path=${encodeURIComponent(group.ThumbnailPath)}'>
@@ -63,6 +63,7 @@ async function showGroup(id) {
 
     const backBtn = document.querySelector('.back-to-groups-button');
     backBtn.onclick = loadGroups;
+
   } catch (error) {
     showError('Failed to load Group')
     console.error(error)
@@ -161,36 +162,44 @@ async function loadGroupStatus() {
   try {
     const stats = await fetchJSON("/api/groups/stats")
 
-    const moveToTrashBtn = document.getElementById('move-to-trash-button')
-    moveToTrashBtn.disabled = stats.FilesToTrashCount === 0
-    const trashCountSpan = document.getElementById('trash-count')
-    trashCountSpan.textContent = stats.FilesToTrashCount
-
-    moveToTrashBtn.onclick = async () => {
-      try {
-        moveToTrashBtn.disabled = true
-        trashCountSpan.textContent = 'Processing...'
-
-        await fetchJSON('/api/files/actions/trash', {
-          method: 'POST'
-        })
-
-        loadGroupStatus();
-      } catch (error) {
-        console.error(error)
-        showError("Failed to move files to trash")
-      }
-    }
+    updateTrashButtonState(stats.FilesToTrashCount)
 
     document.getElementById('pending-count').textContent = stats.Pending
     document.getElementById('decided-count').textContent = stats.Decided
-
-
 
   } catch (error) {
     showError("Failed to load Groups Statistics")
     console.error(error)
   }
 }
+
+function setupTrashButton() {
+  const moveToTrashBtn = document.getElementById('move-to-trash-button')
+  moveToTrashBtn.onclick = async () => {
+    try {
+      moveToTrashBtn.disabled = true
+      trashCountSpan.textContent = 'Processing...'
+
+      await fetchJSON('/api/files/actions/trash', {
+        method: 'POST'
+      })
+
+      loadGroupStatus();
+    } catch (error) {
+      console.error(error)
+      showError("Failed to move files to trash")
+    }
+  }
+}
+
+function updateTrashButtonState(count) {
+  const moveToTrashBtn = document.getElementById('move-to-trash-button')
+  moveToTrashBtn.disabled = count === 0
+  const trashCountSpan = document.getElementById('trash-count')
+  trashCountSpan.textContent = count
+}
+
+
+setupTrashButton()
 loadGroupStatus()
 loadGroups()
