@@ -9,8 +9,9 @@ import (
 type GroupStatus string
 
 const (
-	StatusPending GroupStatus = "pending"
-	StatusDecided GroupStatus = "decided"
+	StatusPending  GroupStatus = "pending"
+	StatusDecided  GroupStatus = "decided"
+	StatusArchived GroupStatus = "archived"
 )
 
 type Group struct {

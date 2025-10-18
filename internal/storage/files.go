@@ -14,6 +14,7 @@ const (
 	ActionPending FileAction = "pending"
 	ActionKeep    FileAction = "keep"
 	ActionTrash   FileAction = "trash"
+	ActionTrashed FileAction = "trashed"
 )
 
 type File struct {
@@ -87,9 +88,10 @@ type FileToTrash struct {
 }
 
 type TrashFilesResponse struct {
-	MovedCount  int
-	FailedCount int
-	Errors      []string
+	MovedCount      int
+	FailedCount     int
+	PartialFailures int
+	Errors          []string
 }
 
 func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
@@ -99,36 +101,79 @@ func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
 	if err != nil {
 		return TrashFilesResponse{}, err
 	}
-
 	defer rows.Close()
 
-	timestamp := time.Now().Format("2006-01-02_15-04-05")
-
-	var movedCount int
-	var failedCount int
-	var errors []string
+	var filesToTrash []FileToTrash
 
 	for rows.Next() {
 		var f FileToTrash
 		if err := rows.Scan(&f.ID, &f.FilePath); err != nil {
 			return TrashFilesResponse{}, err
 		}
+		filesToTrash = append(filesToTrash, f)
+	}
 
-		destPath := filepath.Join("./trash", timestamp, f.FilePath)
-		os.MkdirAll(filepath.Dir(destPath), 0o755)
-		if err := os.Rename(f.FilePath, destPath); err != nil {
-			errors = append(errors, fmt.Sprintf("Couldn't move file %s to trash", f.FilePath))
+	var movedCount int
+	var failedCount int
+	var partialFailures int
+	var errors []string
+
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+
+	for _, f := range filesToTrash {
+		destPath, err := moveFileToTrash(f, timestamp)
+
+		if err != nil {
+			errors = append(errors, fmt.Sprintf("Couldn't move file %s to trash. %s", f.FilePath, err))
 			failedCount++
 		} else {
-			movedCount++
+			err := s.updateDBForTrashedFile(f.ID, destPath)
+
+			if err != nil {
+				errors = append(errors, fmt.Sprintf("File moved but couldn't update database for file %s: %s", f.FilePath, err))
+				partialFailures++
+			} else {
+				movedCount++
+			}
 		}
 	}
 
 	response := TrashFilesResponse{
-		MovedCount:  movedCount,
-		FailedCount: failedCount,
-		Errors:      errors,
+		MovedCount:      movedCount,
+		FailedCount:     failedCount,
+		PartialFailures: partialFailures,
+		Errors:          errors,
 	}
 
 	return response, nil
+}
+
+func (s *Storage) updateDBForTrashedFile(fileID int, newPath string) error {
+	_, err := s.db.Exec(`
+				UPDATE files 
+				SET action = ?, 
+				path = ? 
+				WHERE id = ?`,
+		ActionTrashed,
+		newPath,
+		fileID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func moveFileToTrash(f FileToTrash, timestamp string) (string, error) {
+	destPath := filepath.Join("./trash", timestamp, f.FilePath)
+	if err := os.MkdirAll(filepath.Dir(destPath), 0o755); err != nil {
+		return "", err
+	}
+
+	if err := os.Rename(f.FilePath, destPath); err != nil {
+		return "", err
+	}
+
+	return destPath, nil
 }

@@ -150,4 +150,5 @@ The keyboard-driven workflow is essential for speed - focus on making this seaml
 
 - fit the instructions to the screen hight
 - don't provide code. first guidance
-
+- messages should always be compact or broken into a size that fits one view.
+- never write code in the console or in the files unless explicitly asked to
