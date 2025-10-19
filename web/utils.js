@@ -15,6 +15,16 @@ function showSuccess(message) {
 
   setTimeout(() => successDiv.remove(), 5000)
 }
+
+function showWarning(message) {
+  const warningDiv = document.createElement('div')
+  warningDiv.className = 'success-toast'
+  warningDiv.textContent = message
+  document.body.appendChild(warningDiv)
+
+  setTimeout(() => warningDiv.remove(), 5000)
+}
+
 async function fetchJSON(url, options = {}) {
   const response = await fetch(url, options)
 

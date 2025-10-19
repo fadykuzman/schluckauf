@@ -175,6 +175,8 @@ async function loadGroupStatus() {
 
 function setupTrashButton() {
   const moveToTrashBtn = document.getElementById('move-to-trash-button')
+  const trashCountSpan = document.getElementById('trash-count')
+
   moveToTrashBtn.onclick = async () => {
     try {
       moveToTrashBtn.disabled = true
@@ -193,7 +195,8 @@ function setupTrashButton() {
       }
 
       if (response.PartialFailures > 0) {
-        console.warn("")
+        showWarning('Moved to trash but database not updated')
+        console.warn(response.Errors)
       }
 
       loadGroupStatus();
