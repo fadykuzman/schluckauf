@@ -49,23 +49,8 @@ async function showGroup(id) {
     imagesGrid.innerHTML = ''
     files.forEach((file, index) => {
       const fileDiv = createFileDiv(file, index)
-
-
       imagesGrid.appendChild(fileDiv)
     });
-    imagesGrid.addEventListener('click', async (e) => {
-      if (e.target.classList.contains('keep-button')) {
-        const closest = e.target.closest('.image-item')
-        const groupId = parseInt(closest.dataset.groupId)
-        const fileId = parseInt(closest.dataset.fileId)
-        await updateFileActionById(groupId, fileId, 'keep')
-      } else if (e.target.classList.contains('trash-button')) {
-        const closest = e.target.closest('.image-item')
-        const groupId = parseInt(closest.dataset.groupId)
-        const fileId = parseInt(closest.dataset.fileId)
-        await updateFileActionById(groupId, fileId, 'trash')
-      }
-    })
 
     const backBtn = document.querySelector('.back-to-groups-button');
     backBtn.onclick = () => {
@@ -225,3 +210,18 @@ function updateTrashButtonState(count) {
 setupTrashButton()
 loadGroupStatus()
 loadGroups()
+// Attach eventListener to images-grid
+const imagesGrid = document.querySelector('.images-grid')
+imagesGrid.addEventListener('click', async (e) => {
+  if (e.target.classList.contains('keep-button')) {
+    const closest = e.target.closest('.image-item')
+    const groupId = parseInt(closest.dataset.groupId)
+    const fileId = parseInt(closest.dataset.fileId)
+    await updateFileActionById(groupId, fileId, 'keep')
+  } else if (e.target.classList.contains('trash-button')) {
+    const closest = e.target.closest('.image-item')
+    const groupId = parseInt(closest.dataset.groupId)
+    const fileId = parseInt(closest.dataset.fileId)
+    await updateFileActionById(groupId, fileId, 'trash')
+  }
+})
