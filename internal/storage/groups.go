@@ -58,7 +58,7 @@ func (s *Storage) ListGroups() ([]Group, error) {
 		WHERE f.id = (SELECT MIN(id) FROM files WHERE group_id = g.id)
 		GROUP BY g.id
 		ORDER BY
-		  CASE WHEN status = 'pending' THEN 0 ELSE 1 END,
+		  CASE WHEN status = 'pending' OR status = 'trashed' THEN 0 ELSE 1 END,
 		  updated_at DESC NULLS LAST
 		`)
 	if err != nil {

@@ -44,25 +44,33 @@ async function showGroup(id) {
 
     groupTitle.textContent = `Duplicate Group ${id}`
 
-    const imagesDiv = document.querySelector('.images-grid')
+    const imagesGrid = document.querySelector('.images-grid')
 
-    imagesDiv.innerHTML = ''
+    imagesGrid.innerHTML = ''
     files.forEach((file, index) => {
-      const fileDiv = createImageDiv(file, index)
+      const fileDiv = createFileDiv(file, index)
 
-      imagesDiv.appendChild(fileDiv)
+
+      imagesGrid.appendChild(fileDiv)
     });
-
-    imagesDiv.addEventListener('click', async (e) => {
+    imagesGrid.addEventListener('click', async (e) => {
       if (e.target.classList.contains('keep-button')) {
-        await handleFileAction(e, files, 'keep')
+        const closest = e.target.closest('.image-item')
+        const groupId = parseInt(closest.dataset.groupId)
+        const fileId = parseInt(closest.dataset.fileId)
+        await updateFileActionById(groupId, fileId, 'keep')
       } else if (e.target.classList.contains('trash-button')) {
-        await handleFileAction(e, files, 'trash')
+        const closest = e.target.closest('.image-item')
+        const groupId = parseInt(closest.dataset.groupId)
+        const fileId = parseInt(closest.dataset.fileId)
+        await updateFileActionById(groupId, fileId, 'trash')
       }
     })
 
     const backBtn = document.querySelector('.back-to-groups-button');
-    backBtn.onclick = loadGroups;
+    backBtn.onclick = () => {
+      groupContainer.hidden = true
+    }
 
   } catch (error) {
     showError('Failed to load Group')
@@ -71,16 +79,39 @@ async function showGroup(id) {
 
 }
 
-async function handleFileAction(e, files, action) {
-  const fileDiv = e.target.closest('.image-item')
-  const fileId = parseInt(fileDiv.dataset.fileId)
-  const file = files.find(f => f.ID === fileId)
-  const duplicateImage = fileDiv.querySelector('.duplicate-image')
 
-  await updateFileAction(file, duplicateImage, action)
+async function updateFileActionById(groupId, fileId, action) {
+  const file = document.querySelector(`[data-file-id="${fileId}"]`)
+  const duplicateImage = file.querySelector(".duplicate-image")
+  let previousAction
+  const classList = duplicateImage.classList
+  if (classList.contains("to-keep")) {
+    previousAction = "keep"
+  } else if (classList.contains("to-trash")) {
+    previousAction = "trash"
+  } else {
+    previousAction = "pending"
+  }
+  applyActionState(duplicateImage, action)
+  try {
+
+    await fetchJSON(`/api/groups/${groupId}/files/${fileId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: action
+      })
+    })
+    loadGroupStatus()
+  } catch (error) {
+    applyActionState(duplicateImage, previousAction)
+    showError(`Failed to ${action} file`)
+  }
 }
 
-function createImageDiv(file, index) {
+function createFileDiv(file, index) {
   const fileDiv = document.createElement('div')
 
   fileDiv.dataset.fileId = file.ID
@@ -103,7 +134,6 @@ function applyActionState(element, action) {
     element.classList.remove("to-trash")
     element.classList.add("to-keep")
   }
-
 }
 
 function createImageElement(file, index, fileDiv) {
@@ -126,30 +156,6 @@ function createImageElement(file, index, fileDiv) {
   const metaDataDiv = fileDiv.querySelector('.metadata')
   metaDataDiv.prepend(pathDiv)
 
-}
-
-async function updateFileAction(file, duplicateImage, action) {
-  const previousAction = file.Action
-
-  applyActionState(duplicateImage, action);
-  file.Action = action
-
-  try {
-
-    await fetchJSON(`/api/groups/${file.GroupID}/files/${file.ID}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: action
-      })
-    })
-  } catch (error) {
-    applyActionState(duplicateImage, previousAction)
-    file.Action = previousAction
-    showError(`Failed to ${action} file`)
-  }
 }
 
 function formatBytes(bytes) {
@@ -187,15 +193,16 @@ function setupTrashButton() {
       })
 
       if (response.MovedCount > 0) {
-        showSuccess('Successfully moved ${response.MovedCount} of ${response.TotalCount} to trash')
+        showSuccess(`Successfully moved ${response.MovedCount} of ${response.TotalCount} to trash`)
       }
 
-      if (response.FileCount > 0) {
-        showError('Failed to move ${response.FileCount} files to trash')
+      if (response.FailedCount > 0) {
+        showError(`Failed to move ${response.FileCount} files to trash`)
+        console.log(response.Errors)
       }
 
       if (response.PartialFailures > 0) {
-        showWarning('Moved to trash but database not updated')
+        showWarning(`Moved to trash but database not updated`)
         console.warn(response.Errors)
       }
 

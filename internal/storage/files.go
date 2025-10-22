@@ -3,6 +3,7 @@ package storage
 import (
 	_ "database/sql"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -66,15 +67,24 @@ func (s *Storage) GetGroupFiles(groupID int) ([]File, error) {
 }
 
 func (s *Storage) UpdateFileAction(groupID int, fileID int, action FileAction) error {
-	_, err := s.db.Exec(
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	_, err = tx.Exec(
 		"UPDATE files SET action = ? WHERE id = ?",
 		action, fileID,
 	)
 
-	_, errGroup := s.db.Exec(
+	_, errGroup := tx.Exec(
 		" UPDATE groups SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
 		groupID,
 	)
+
+	tx.Commit()
 
 	if err != nil {
 		return err
@@ -114,6 +124,8 @@ func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
 		filesToTrash = append(filesToTrash, f)
 	}
 
+	log.Print("Moving files to trash")
+
 	var movedCount int
 	var failedCount int
 	var partialFailures int
@@ -122,12 +134,15 @@ func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
 	for _, f := range filesToTrash {
+		log.Printf("Moving file %d to trash", f.ID)
 		destPath, err := moveFileToTrash(f, timestamp)
 
 		if err != nil {
+			log.Printf("Error moving file %d to trash", f.ID)
 			errors = append(errors, fmt.Sprintf("Couldn't move file %s to trash. %s", f.FilePath, err))
 			failedCount++
 		} else {
+			log.Printf("Moved file %d to trash", f.ID)
 			err := s.updateDBForTrashedFile(f.ID, destPath)
 
 			if err != nil {
@@ -151,7 +166,8 @@ func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
 }
 
 func (s *Storage) updateDBForTrashedFile(fileID int, newPath string) error {
-	_, err := s.db.Exec(`
+	log.Printf("Updating file %d to be %s", fileID, ActionTrashed)
+	result, err := s.db.Exec(`
 				UPDATE files 
 				SET action = ?, 
 				path = ? 
@@ -160,9 +176,13 @@ func (s *Storage) updateDBForTrashedFile(fileID int, newPath string) error {
 		newPath,
 		fileID,
 	)
+
+	fmt.Printf("%s", result)
 	if err != nil {
+		log.Printf("Error while Updating file %d to be %s", fileID, ActionTrashed)
 		return err
 	}
+	log.Printf("Updated file %d to be %s", fileID, ActionTrashed)
 
 	return nil
 }

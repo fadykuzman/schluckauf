@@ -8,7 +8,7 @@ function showError(message) {
 }
 
 function showSuccess(message) {
-  const successDiv = document.createElememt('div')
+  const successDiv = document.createElement('div')
   successDiv.className = 'success-toast'
   successDiv.textContent = message
   document.body.appendChild(successDiv)
