@@ -16,6 +16,16 @@ func New(dbPath string) (*Storage, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	_, err = db.Exec("PRAGMA journal_mode=WAL")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("PRAGMA busy_timeout=5000")
+	if err != nil {
+		return nil, err
+	}
 	_, err = db.Exec(`
 		  CREATE TABLE IF NOT EXISTS groups (
 		      id INTEGER PRIMARY KEY AUTOINCREMENT,

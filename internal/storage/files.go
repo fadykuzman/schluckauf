@@ -78,18 +78,20 @@ func (s *Storage) UpdateFileAction(groupID int, fileID int, action FileAction) e
 		"UPDATE files SET action = ? WHERE id = ?",
 		action, fileID,
 	)
+	if err != nil {
+		return err
+	}
 
 	_, errGroup := tx.Exec(
 		" UPDATE groups SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
 		groupID,
 	)
 
-	tx.Commit()
-
-	if err != nil {
-		return err
+	if errGroup != nil {
+		return errGroup
 	}
-	return errGroup
+
+	return tx.Commit()
 }
 
 type FileToTrash struct {
