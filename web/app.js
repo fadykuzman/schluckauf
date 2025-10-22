@@ -182,7 +182,7 @@ function setupTrashButton() {
       }
 
       if (response.FailedCount > 0) {
-        showError(`Failed to move ${response.FileCount} files to trash`)
+        showError(`Failed to move ${response.FailedCount} files to trash`)
         console.log(response.Errors)
       }
 

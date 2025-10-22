@@ -18,7 +18,7 @@ function showSuccess(message) {
 
 function showWarning(message) {
   const warningDiv = document.createElement('div')
-  warningDiv.className = 'success-toast'
+  warningDiv.className = 'warning-toast'
   warningDiv.textContent = message
   document.body.appendChild(warningDiv)
 
