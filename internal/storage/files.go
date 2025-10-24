@@ -201,3 +201,16 @@ func moveFileToTrash(f FileToTrash, timestamp string) (string, error) {
 
 	return destPath, nil
 }
+
+func (s *Storage) DeletePendingData() error {
+	_, err := s.db.Exec("DELETE FROM files WHERE action = 'pending")
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec("DELETE FROM groups WHERE id NOT IN (SELECT DISTINCT group_id FROM files)")
+	if err != nil {
+		return err
+	}
+	return nil
+}

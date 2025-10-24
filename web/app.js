@@ -1,3 +1,17 @@
+let selectedImageIndex = null
+
+function selectImage(index) {
+  document.querySelectorAll('.image-item').forEach(item => {
+    item.classList.remove('selected')
+  })
+
+  const imageItems = document.querySelectorAll('.image-item')
+  if (index >= 1 && index <= imageItems.length) {
+    selectedImageIndex = index
+    imageItems[index - 1].classList.add('selected')
+  }
+}
+
 
 async function loadGroups() {
   var groupContainer = document.querySelector('.group-detail-view')
@@ -61,7 +75,6 @@ async function showGroup(id) {
     showError('Failed to load Group')
     console.error(error)
   }
-
 }
 
 
@@ -206,6 +219,44 @@ function updateTrashButtonState(count) {
   trashCountSpan.textContent = count
 }
 
+function setupKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    const detailView = document.querySelector('.group-detail-view')
+
+    if (detailView.hidden) return
+
+    if (e.key >= '1' && e.key <= '9') {
+      e.preventDefault()
+      selectImage(parseInt(e.key))
+      return
+    }
+
+    const key = e.key.toLowerCase()
+
+    if (key === 'k' && selectedImageIndex != null) {
+      e.preventDefault()
+      const selectedItem = document.querySelector('.image-item.selected')
+      if (selectedItem) {
+        const fileId = parseInt(selectedItem.dataset.fileId)
+        const groupId = parseInt(selectedItem.dataset.groupId)
+        updateFileActionById(groupId, fileId, "keep")
+      }
+    } else if (key === 'd' && selectedImageIndex != null) {
+      e.preventDefault()
+      const selectedItem = document.querySelector('.image-item.selected')
+      if (selectedItem) {
+        const groupId = parseInt(selectedItem.dataset.groupId)
+        const fileId = parseInt(selectedItem.dataset.fileId)
+        updateFileActionById(groupId, fileId, "trash")
+      }
+    } else if (key === 'escape') {
+      e.preventDefault()
+      detailView.hidden = true
+
+    }
+  })
+
+}
 
 setupTrashButton()
 loadGroupStatus()
@@ -225,3 +276,4 @@ imagesGrid.addEventListener('click', async (e) => {
     await updateFileActionById(groupId, fileId, 'trash')
   }
 })
+setupKeyboardShortcuts()

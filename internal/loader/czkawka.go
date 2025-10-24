@@ -20,7 +20,7 @@ type DuplicateGroup struct {
 	Hash      string
 	Size      int64
 	FileCount int
-	Files     []string
+	Files     []FileInfo
 }
 
 func ParseJSON(filepath string) ([]DuplicateGroup, error) {
@@ -56,16 +56,11 @@ func ParseJSON(filepath string) ([]DuplicateGroup, error) {
 				groupHash = fmt.Sprintf("%x", h.Sum(nil))
 			}
 
-			var paths []string
-			for _, file := range fileGroup {
-				paths = append(paths, file.Path)
-			}
-
 			groups = append(groups, DuplicateGroup{
 				Hash:      groupHash,
 				Size:      firstFile.Size,
 				FileCount: len(fileGroup),
-				Files:     paths,
+				Files:     fileGroup,
 			})
 
 		}

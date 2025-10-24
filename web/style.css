@@ -252,3 +252,35 @@ button.trash-button {
   background: #2e7d32;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.image-item.selected {
+  border: 3px solid #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+  background: #e7f3ff;
+}
+
+.keyboard-shortcuts {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 15px 0;
+  font-size: 14px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.keyboard-shortcuts stron {
+  color: #495057;
+}
+
+.keyboard-shortcuts kbd {
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: monospace;
+  font-size: 13px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
