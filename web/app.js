@@ -23,7 +23,6 @@ async function loadGroups() {
     const container = document.getElementById('groups-container');
     container.innerHTML = '';
 
-
     groups.forEach(group => {
       const item = document.createElement('div');
       item.className = 'group-item';
@@ -255,25 +254,65 @@ function setupKeyboardShortcuts() {
 
     }
   })
-
 }
+
+function setupFileActionButton() {
+  const imagesGrid = document.querySelector('.images-grid')
+  imagesGrid.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('keep-button')) {
+      const closest = e.target.closest('.image-item')
+      const groupId = parseInt(closest.dataset.groupId)
+      const fileId = parseInt(closest.dataset.fileId)
+      await updateFileActionById(groupId, fileId, 'keep')
+    } else if (e.target.classList.contains('trash-button')) {
+      const closest = e.target.closest('.image-item')
+      const groupId = parseInt(closest.dataset.groupId)
+      const fileId = parseInt(closest.dataset.fileId)
+      await updateFileActionById(groupId, fileId, 'trash')
+    }
+  })
+}
+
+function setupScanForm() {
+  const form = document.getElementById("scan")
+  const input = document.getElementById("scan-directory-input")
+  const button = document.getElementById("scan-button")
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+
+    const directory = input.value.trim()
+    if (!directory) {
+      showError('Please enter a directory path')
+      return
+    }
+
+    button.disabled = true
+    button.textContent = 'Scanning...'
+
+    try {
+      const response = await fetchJSON('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ directory: directory })
+      })
+      showSuccess(response.message || `Found ${response.groupCount} duplicate groups`)
+
+      await loadGroups()
+      await loadGroupStatus()
+    } catch (error) {
+      showError('Scan failed ' + error.message)
+    } finally {
+      button.disabled = false
+      button.textContent = 'Scan for Duplicates'
+    }
+  })
+}
+
 
 setupTrashButton()
 loadGroupStatus()
 loadGroups()
-// Attach eventListener to images-grid
-const imagesGrid = document.querySelector('.images-grid')
-imagesGrid.addEventListener('click', async (e) => {
-  if (e.target.classList.contains('keep-button')) {
-    const closest = e.target.closest('.image-item')
-    const groupId = parseInt(closest.dataset.groupId)
-    const fileId = parseInt(closest.dataset.fileId)
-    await updateFileActionById(groupId, fileId, 'keep')
-  } else if (e.target.classList.contains('trash-button')) {
-    const closest = e.target.closest('.image-item')
-    const groupId = parseInt(closest.dataset.groupId)
-    const fileId = parseInt(closest.dataset.fileId)
-    await updateFileActionById(groupId, fileId, 'trash')
-  }
-})
+setupFileActionButton()
 setupKeyboardShortcuts()
+setupScanForm()

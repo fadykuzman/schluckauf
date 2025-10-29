@@ -284,3 +284,48 @@ button.trash-button {
   font-size: 13px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
+
+#scan {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+}
+
+#scan-directory-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+#scan-directory-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(1, 123, 255, 0.1);
+}
+
+#scan-button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+#scan-button:hover {
+  background: #218838;
+}
+
+#scan-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}

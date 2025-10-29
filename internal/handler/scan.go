@@ -47,28 +47,46 @@ func (h *Handler) ScanDirectory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create temp file for JSON output
-	tempFile, err := os.CreateTemp("", "czkawka-scan-*.json")
+	tmpDir := "./tmp"
+	os.MkdirAll(tmpDir, 0o770)
+
+	tempFile, err := os.CreateTemp(tmpDir, "czkawka-scan-*.json")
 	if err != nil {
 		http.Error(w, "Failed to create temp file", http.StatusInternalServerError)
 		return
 	}
 
-	defer os.Remove(tempFile.Name())
-	defer tempFile.Close()
+	// defer os.Remove(tempFile.Name())
+	tempFile.Close()
 
 	// execute the cli command
-	cmd := exec.Command("czkawka_cli", "dup", "-d", req.Directory, "--export-json", tempFile.Name())
+	fmt.Printf("Directory: %s\n", req.Directory)
+	fmt.Printf("Temp file: %s\n", tempFile.Name())
+	cmd := exec.Command("czkawka_cli", "image", "-d", req.Directory, "-C", tempFile.Name())
+	fmt.Printf("Cmd: %s\n", cmd)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Scan failed: %s", string(output)), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Scan failed: %s \n %s ", string(output), err), http.StatusInternalServerError)
 		return
 	}
 
 	// parse the JSON results
 	groups, err := loader.ParseJSON(tempFile.Name())
+	if len(groups) == 0 {
+		resp := ScanResponse{
+			Success:    true,
+			GroupCount: 0,
+			Message:    "No Duplicates found",
+		}
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
 	if err != nil {
-		http.Error(w, "Failed to parse scan results", http.StatusInternalServerError)
+		http.Error(w,
+			fmt.Sprintf("Failed to parse scan results for file: %s. | Error: %s", tempFile.Name(), err),
+			http.StatusInternalServerError)
 		return
 	}
 
