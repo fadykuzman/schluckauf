@@ -23,12 +23,18 @@ async function loadGroups() {
     const container = document.getElementById('groups-container');
     container.innerHTML = '';
 
-    groups.forEach(group => {
+    if (groups === null || groups.length === 0) {
       const item = document.createElement('div');
-      item.className = 'group-item';
-      const reviewString = group.UpdatedAt ? `last reviewed at: ${group.UpdatedAt}` : "Not yet reviewed"
+      item.textContent = "No duplicates found yet"
+      container.appendChild(item)
 
-      item.innerHTML = `
+    } else {
+      groups.forEach(group => {
+        const item = document.createElement('div');
+        item.className = 'group-item';
+        const reviewString = group.UpdatedAt ? `last reviewed at: ${group.UpdatedAt}` : "Not yet reviewed"
+
+        item.innerHTML = `
       <img src='/api/image?path=${encodeURIComponent(group.ThumbnailPath)}'>
       <div class="group-info">
         ${group.FileCount} files
@@ -37,9 +43,11 @@ async function loadGroups() {
         <span class="group-updated-at">${reviewString}</span>
       </div>
     `;
-      item.onclick = () => showGroup(group.ID);
-      container.appendChild(item)
-    });
+        item.onclick = () => showGroup(group.ID);
+        container.appendChild(item)
+      });
+
+    }
   } catch (error) {
     showError('Failed to load group')
     console.error(error)
