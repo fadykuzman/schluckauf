@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"encoding/json"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -14,7 +15,7 @@ const (
 	StatusArchived GroupStatus = "archived"
 )
 
-type Group struct {
+type FileGroup struct {
 	ID            int
 	Hash          string
 	Size          int64
@@ -24,7 +25,7 @@ type Group struct {
 	ThumbnailPath string
 }
 
-type GroupStats struct {
+type ImageGroupStats struct {
 	Pending           int
 	Decided           int
 	FilesToTrashCount int
@@ -32,7 +33,7 @@ type GroupStats struct {
 
 func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, error) {
 	result, err := s.db.Exec(
-		"INSERT INTO groups (hash, size, file_count) VALUES (?, ?, ?)",
+		"INSERT INTO file_groups (hash, size, file_count) VALUES (?, ?, ?)",
 		hash, size, fileCount,
 	)
 	if err != nil {
@@ -45,17 +46,34 @@ func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, erro
 	return int(id), nil
 }
 
-func (s *Storage) ListGroups() ([]Group, error) {
+func (s *Storage) CreateImageGroup(hash []int, size int64, fileCount int) (int, error) {
+	hashJSON, _ := json.Marshal(hash)
+
+	result, err := s.db.Exec(
+		"INSERT INTO image_groups (hash, size, image_count) VALUES (?, ?, ?)",
+		hashJSON, size, fileCount,
+	)
+	if err != nil {
+		return 0, err
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(id), nil
+}
+
+func (s *Storage) ListImageGroups() ([]FileGroup, error) {
 	groupRows, err := s.db.Query(
-		`SELECT g.id, g.hash, g.size, g.file_count, g.updated_at, f.path as thumbnail_path,
+		`SELECT g.id, g.hash, g.size, g.image_count, g.updated_at, i.path as thumbnail_path,
 			CASE
-				WHEN SUM(CASE WHEN f.action = 'pending' THEN 1 ELSE 0 END) > 0
+				WHEN SUM(CASE WHEN i.action = 'pending' THEN 1 ELSE 0 END) > 0
 		    THEN 'pending'
 		    ELSE 'decided'
 		  END as status
-		FROM groups g
-		LEFT JOIN files f ON g.id = f.group_id
-		WHERE f.id = (SELECT MIN(id) FROM files WHERE group_id = g.id)
+		FROM image_groups g
+		LEFT JOIN images i ON g.id = i.group_id
+		WHERE i.id = (SELECT MIN(id) FROM images WHERE group_id = g.id)
 		GROUP BY g.id
 		ORDER BY
 		  CASE WHEN status = 'pending' OR status = 'trashed' THEN 0 ELSE 1 END,
@@ -66,9 +84,9 @@ func (s *Storage) ListGroups() ([]Group, error) {
 	}
 	defer groupRows.Close()
 
-	var groups []Group
+	var groups []FileGroup
 	for groupRows.Next() {
-		var g Group
+		var g FileGroup
 
 		if err := groupRows.Scan(
 			&g.ID,
@@ -86,36 +104,36 @@ func (s *Storage) ListGroups() ([]Group, error) {
 	return groups, nil
 }
 
-func (s *Storage) GetGroupStats() (GroupStats, error) {
+func (s *Storage) GetImageGroupStats() (ImageGroupStats, error) {
 	rows, err := s.db.Query(`
 		SELECT status, COUNT(*) as count
 		FROM (
 		  SELECT g.id,
 				CASE
-		      WHEN SUM(CASE WHEN f.action = 'pending' THEN 1 ELSE 0 END) > 0
+		      WHEN SUM(CASE WHEN i.action = 'pending' THEN 1 ELSE 0 END) > 0
 		      THEN 'pending'
 		      ELSE 'decided'
 	 			END as status
-			FROM groups g
-		  LEFT JOIN files f ON g.id = f.group_id
+			FROM image_groups g
+		  LEFT JOIN images i ON g.id = i.group_id
 		  GROUP BY g.id
 		) as group_statuses
 		GROUP BY status
 		`)
 	if err != nil {
-		return GroupStats{}, err
+		return ImageGroupStats{}, err
 	}
 
 	defer rows.Close()
 
-	var gs GroupStats
+	var gs ImageGroupStats
 
 	for rows.Next() {
 		var status string
 		var count int
 
 		if err := rows.Scan(&status, &count); err != nil {
-			return GroupStats{}, err
+			return ImageGroupStats{}, err
 		}
 
 		switch status {
@@ -126,7 +144,7 @@ func (s *Storage) GetGroupStats() (GroupStats, error) {
 		}
 	}
 
-	row := s.db.QueryRow("SELECT COUNT(*) FROM files WHERE action = 'trash'")
+	row := s.db.QueryRow("SELECT COUNT(*) FROM images WHERE action = 'trash'")
 
 	if err := row.Scan(&gs.FilesToTrashCount); err != nil {
 		return gs, err

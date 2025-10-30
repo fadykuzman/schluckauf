@@ -14,7 +14,7 @@ import (
 func main() {
 	store, err := storage.New("./data/duplicates.db")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error: %+v", err))
 	}
 	defer store.Close()
 
@@ -30,7 +30,7 @@ func main() {
 			}
 			jsonPath := os.Args[2]
 
-			groups, err := loader.ParseJSON(jsonPath)
+			groups, err := loader.ParseFileDuplicates(jsonPath)
 			if err != nil {
 				log.Fatal("Failed to parse JSON: ", err)
 			}
@@ -54,9 +54,9 @@ func main() {
 
 	h := handler.New(store)
 
-	http.HandleFunc("GET /api/groups", h.ListGroups)
+	http.HandleFunc("GET /api/groups", h.ListImageGroups)
 	http.HandleFunc("/health", h.Health)
-	http.HandleFunc("GET /api/groups/{id}", h.GetGroupFiles)
+	http.HandleFunc("GET /api/groups/images/{id}", h.GetGroupImages)
 	http.HandleFunc("/api/image", h.ServeImage)
 	http.HandleFunc("POST /api/groups/{gid}/files/{fid}", h.UpdateFileAction)
 	http.HandleFunc("GET /api/groups/stats", h.GetGroupStats)

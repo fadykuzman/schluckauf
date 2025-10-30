@@ -11,13 +11,6 @@ import (
 
 type FileAction string
 
-const (
-	ActionPending FileAction = "pending"
-	ActionKeep    FileAction = "keep"
-	ActionTrash   FileAction = "trash"
-	ActionTrashed FileAction = "trashed"
-)
-
 type File struct {
 	ID       int
 	GroupID  int
@@ -202,13 +195,13 @@ func moveFileToTrash(f FileToTrash, timestamp string) (string, error) {
 	return destPath, nil
 }
 
-func (s *Storage) DeletePendingData() error {
+func (s *Storage) DeletePendingFiles() error {
 	_, err := s.db.Exec("DELETE FROM files WHERE action = 'pending")
 	if err != nil {
 		return err
 	}
 
-	_, err = s.db.Exec("DELETE FROM groups WHERE id NOT IN (SELECT DISTINCT group_id FROM files)")
+	_, err = s.db.Exec("DELETE FROM file_groups WHERE id NOT IN (SELECT DISTINCT group_id FROM images)")
 	if err != nil {
 		return err
 	}

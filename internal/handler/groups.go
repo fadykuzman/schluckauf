@@ -6,8 +6,8 @@ import (
 	"strconv"
 )
 
-func (h *Handler) ListGroups(w http.ResponseWriter, r *http.Request) {
-	groups, err := h.store.ListGroups()
+func (h *Handler) ListImageGroups(w http.ResponseWriter, r *http.Request) {
+	groups, err := h.store.ListImageGroups()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -20,14 +20,14 @@ func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-func (h *Handler) GetGroupFiles(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetGroupImages(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	groupID, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid Group ID", http.StatusBadRequest)
 		return
 	}
-	files, err := h.store.GetGroupFiles(groupID)
+	files, err := h.store.GetGroupImages(groupID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -38,7 +38,7 @@ func (h *Handler) GetGroupFiles(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetGroupStats(w http.ResponseWriter, r *http.Request) {
-	gs, err := h.store.GetGroupStats()
+	gs, err := h.store.GetImageGroupStats()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

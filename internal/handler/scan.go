@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -66,13 +67,16 @@ func (h *Handler) ScanDirectory(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Cmd: %s\n", cmd)
 
 	output, err := cmd.CombinedOutput()
+	groups, parseErr := loader.ParseImageDuplicates(tempFile.Name())
+	if parseErr != nil {
+		http.Error(w, fmt.Sprintf("Scan failed: %s (parse error: %v)", string(output), parseErr), http.StatusInternalServerError)
+	}
+
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Scan failed: %s \n %s ", string(output), err), http.StatusInternalServerError)
-		return
+		log.Printf("warning: czkawka exited with error (%v) burt produced valid output", err)
 	}
 
 	// parse the JSON results
-	groups, err := loader.ParseJSON(tempFile.Name())
 	if len(groups) == 0 {
 		resp := ScanResponse{
 			Success:    true,
@@ -83,31 +87,31 @@ func (h *Handler) ScanDirectory(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-	if err != nil {
-		http.Error(w,
-			fmt.Sprintf("Failed to parse scan results for file: %s. | Error: %s", tempFile.Name(), err),
-			http.StatusInternalServerError)
-		return
-	}
 
 	// Clear pending data
-	if err := h.store.DeletePendingData(); err != nil {
-		http.Error(w, "Failed to clear pending data", http.StatusInternalServerError)
+	if err := h.store.DeletePendingImages(); err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("error deleting pending images: %v", err),
+			http.StatusInternalServerError)
 		return
 	}
 
 	// Load new scan results into database
 	for _, group := range groups {
-		gid, err := h.store.CreateGroup(group.Hash, group.Size, group.FileCount)
+		gid, err := h.store.CreateImageGroup(
+			group.Hash,
+			group.Size,
+			group.ImageCount)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to create group with hash: %s", group.Hash), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Failed to create group with hash: %d", group.Hash), http.StatusInternalServerError)
 			return
 		}
 
-		for _, file := range group.Files {
-			_, err := h.store.CreateFile(gid, file.Path, group.Size)
+		for _, file := range group.Images {
+			_, err := h.store.CreateImage(gid, file.Path, group.Size)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Failed to create file with gid %s and path %s", gid, file.Path), http.StatusInternalServerError)
+				http.Error(w, fmt.Sprintf("Failed to create image with gid %d and path %s: \n error (%v)", gid, file.Path, err), http.StatusInternalServerError)
 				return
 			}
 		}

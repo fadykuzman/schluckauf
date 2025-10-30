@@ -1,0 +1,209 @@
+package storage
+
+import (
+	_ "database/sql"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"time"
+)
+
+type ImageAction string
+
+type Image struct {
+	ID        int        `json:"id"`
+	GroupID   int        `json:"group_id"`
+	Path      string     `json:"path"`
+	Imagesize int64      `json:"image_size"`
+	Action    FileAction `json:"action"`
+}
+
+func (s *Storage) CreateImage(groupID int, path string, filesize int64) (int, error) {
+	result, err := s.db.Exec(
+		"INSERT INTO images (group_id, path, image_size) VALUES (?, ?,?)",
+		groupID, path, filesize,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("failed to insert image: %w", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get last insertId for image: %w", err)
+	}
+	return int(id), nil
+}
+
+func (s *Storage) GetGroupImages(groupID int) ([]File, error) {
+	rows, err := s.db.Query(
+		"SELECT id, group_id, path, filesize, action FROM images WHERE group_id=?",
+		groupID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var files []File
+
+	for rows.Next() {
+		var f File
+		if err := rows.Scan(&f.ID, &f.GroupID, &f.Path, &f.Filesize, &f.Action); err != nil {
+			return nil, err
+		}
+		files = append(files, f)
+	}
+
+	return files, nil
+}
+
+func (s *Storage) UpdateImageAction(groupID int, fileID int, action FileAction) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	_, err = tx.Exec(
+		"UPDATE images SET action = ? WHERE id = ?",
+		action, fileID,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, errGroup := tx.Exec(
+		" UPDATE image_groups SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+		groupID,
+	)
+
+	if errGroup != nil {
+		return errGroup
+	}
+
+	return tx.Commit()
+}
+
+type ImageToTrash struct {
+	ID   int
+	Path string
+}
+
+type TrashImagesResponse struct {
+	MovedCount      int
+	FailedCount     int
+	PartialFailures int
+	TotalCount      int
+	Errors          []string
+}
+
+func (s *Storage) TrashImages() (TrashImagesResponse, error) {
+	rows, err := s.db.Query(`
+		SELECT id, path FROM images WHERE action = 'trash'
+		`)
+	if err != nil {
+		return TrashImagesResponse{}, err
+	}
+	defer rows.Close()
+
+	var imagesToTrash []ImageToTrash
+
+	for rows.Next() {
+		var f ImageToTrash
+		if err := rows.Scan(&f.ID, &f.Path); err != nil {
+			return TrashImagesResponse{}, err
+		}
+		imagesToTrash = append(imagesToTrash, f)
+	}
+
+	log.Print("Moving files to trash")
+
+	var movedCount int
+	var failedCount int
+	var partialFailures int
+	var errors []string
+
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+
+	for _, image := range imagesToTrash {
+		log.Printf("Moving file %d to trash", image.ID)
+		destPath, err := moveImageToTrash(image, timestamp)
+
+		if err != nil {
+			log.Printf("Error moving file %d to trash", image.ID)
+			errors = append(errors, fmt.Sprintf("Couldn't move file %s to trash. %s", image.Path, err))
+			failedCount++
+		} else {
+			log.Printf("Moved file %d to trash", image.ID)
+			err := s.updateDBForTrashedImage(image.ID, destPath)
+
+			if err != nil {
+				errors = append(errors, fmt.Sprintf("File moved but couldn't update database for file %s: %s", image.Path, err))
+				partialFailures++
+			} else {
+				movedCount++
+			}
+		}
+	}
+
+	response := TrashImagesResponse{
+		MovedCount:      movedCount,
+		FailedCount:     failedCount,
+		PartialFailures: partialFailures,
+		TotalCount:      movedCount + failedCount + partialFailures,
+		Errors:          errors,
+	}
+
+	return response, nil
+}
+
+func (s *Storage) updateDBForTrashedImage(fileID int, newPath string) error {
+	log.Printf("Updating image %d to be %s", fileID, ActionTrashed)
+	result, err := s.db.Exec(`
+				UPDATE images 
+				SET action = ?, 
+				path = ? 
+				WHERE id = ?`,
+		ActionTrashed,
+		newPath,
+		fileID,
+	)
+
+	fmt.Printf("%s", result)
+	if err != nil {
+		log.Printf("Error while Updating image %d to be %s", fileID, ActionTrashed)
+		return err
+	}
+	log.Printf("Updated image %d to be %s", fileID, ActionTrashed)
+
+	return nil
+}
+
+func moveImageToTrash(image ImageToTrash, timestamp string) (string, error) {
+	destPath := filepath.Join("./trash", timestamp, image.Path)
+	if err := os.MkdirAll(filepath.Dir(destPath), 0o755); err != nil {
+		return "", err
+	}
+
+	if err := os.Rename(image.Path, destPath); err != nil {
+		return "", err
+	}
+
+	return destPath, nil
+}
+
+func (s *Storage) DeletePendingImages() error {
+	_, err := s.db.Exec("DELETE FROM images WHERE action = 'pending'")
+	if err != nil {
+		return fmt.Errorf("failed to delete pending images %w", err)
+	}
+
+	_, err = s.db.Exec("DELETE FROM image_groups WHERE id NOT IN (SELECT DISTINCT group_id FROM images)")
+	if err != nil {
+		return fmt.Errorf("failed to delete image groups with no images in the images table %w", err)
+	}
+	return nil
+}
