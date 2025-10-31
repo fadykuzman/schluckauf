@@ -155,7 +155,7 @@ function createImageElement(image, index, imageDiv) {
 
   const pathDiv = document.createElement('div')
   pathDiv.innerHTML = '<strong>Path:</strong>'
-  pathDiv.append(image.Path)
+  pathDiv.append(image.path)
 
   const metaDataDiv = imageDiv.querySelector('.metadata')
   metaDataDiv.prepend(pathDiv)
