@@ -70,10 +70,11 @@ func (h *Handler) ScanDirectory(w http.ResponseWriter, r *http.Request) {
 	groups, parseErr := loader.ParseImageDuplicates(tempFile.Name())
 	if parseErr != nil {
 		http.Error(w, fmt.Sprintf("Scan failed: %s (parse error: %v)", string(output), parseErr), http.StatusInternalServerError)
+		return
 	}
 
 	if err != nil {
-		log.Printf("warning: czkawka exited with error (%v) burt produced valid output", err)
+		log.Printf("warning: czkawka exited with error (%v) but produced valid output", err)
 	}
 
 	// parse the JSON results
