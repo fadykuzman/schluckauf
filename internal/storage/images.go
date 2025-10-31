@@ -105,18 +105,18 @@ func (s *Storage) TrashImages() (TrashImagesResponse, error) {
 		SELECT id, path FROM images WHERE action = 'trash'
 		`)
 	if err != nil {
-		return TrashImagesResponse{}, err
+		return TrashImagesResponse{}, fmt.Errorf("failed to query images to trash: %w", err)
 	}
 	defer rows.Close()
 
 	var imagesToTrash []ImageToTrash
 
 	for rows.Next() {
-		var f ImageToTrash
-		if err := rows.Scan(&f.ID, &f.Path); err != nil {
-			return TrashImagesResponse{}, err
+		var image ImageToTrash
+		if err := rows.Scan(&image.ID, &image.Path); err != nil {
+			return TrashImagesResponse{}, fmt.Errorf("failed to scan image to trash row into ImageToTrash struct", err)
 		}
-		imagesToTrash = append(imagesToTrash, f)
+		imagesToTrash = append(imagesToTrash, image)
 	}
 
 	log.Print("Moving files to trash")
