@@ -13,10 +13,23 @@ type ImageAction string
 
 type Image struct {
 	ID        int        `json:"id"`
-	GroupID   int        `json:"group_id"`
+	GroupID   int        `json:"groupId"`
 	Path      string     `json:"path"`
-	Imagesize int64      `json:"image_size"`
+	Imagesize int64      `json:"imageSize"`
 	Action    FileAction `json:"action"`
+}
+
+type ImageToTrash struct {
+	ID   int    `json:"id"`
+	Path string `json:"path"`
+}
+
+type TrashImagesResponse struct {
+	MovedCount      int      `json:"movedCount"`
+	FailedCount     int      `json:"failedCount"`
+	PartialFailures int      `json:"partialfailures"`
+	TotalCount      int      `json:"totalCount"`
+	Errors          []string `json:"errors"`
 }
 
 func (s *Storage) CreateImage(groupID int, path string, filesize int64) (int, error) {
@@ -35,7 +48,7 @@ func (s *Storage) CreateImage(groupID int, path string, filesize int64) (int, er
 	return int(id), nil
 }
 
-func (s *Storage) GetGroupImages(groupID int) ([]File, error) {
+func (s *Storage) GetGroupImages(groupID int) ([]Image, error) {
 	rows, err := s.db.Query(
 		"SELECT id, group_id, path, image_size, action FROM images WHERE group_id=?",
 		groupID,
@@ -46,17 +59,17 @@ func (s *Storage) GetGroupImages(groupID int) ([]File, error) {
 
 	defer rows.Close()
 
-	var files []File
+	var images []Image
 
 	for rows.Next() {
-		var f File
-		if err := rows.Scan(&f.ID, &f.GroupID, &f.Path, &f.Filesize, &f.Action); err != nil {
+		var f Image
+		if err := rows.Scan(&f.ID, &f.GroupID, &f.Path, &f.Imagesize, &f.Action); err != nil {
 			return nil, err
 		}
-		files = append(files, f)
+		images = append(images, f)
 	}
 
-	return files, nil
+	return images, nil
 }
 
 func (s *Storage) UpdateImageAction(groupID int, fileID int, action FileAction) error {
@@ -85,19 +98,6 @@ func (s *Storage) UpdateImageAction(groupID int, fileID int, action FileAction) 
 	}
 
 	return tx.Commit()
-}
-
-type ImageToTrash struct {
-	ID   int
-	Path string
-}
-
-type TrashImagesResponse struct {
-	MovedCount      int
-	FailedCount     int
-	PartialFailures int
-	TotalCount      int
-	Errors          []string
 }
 
 func (s *Storage) TrashImages() (TrashImagesResponse, error) {

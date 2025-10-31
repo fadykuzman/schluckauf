@@ -102,10 +102,10 @@ type TrashFilesResponse struct {
 
 func (s *Storage) TrashFiles() (TrashFilesResponse, error) {
 	rows, err := s.db.Query(`
-		SELECT id, path FROM files WHERE action = 'trash'
+		SELECT id, path FROM images WHERE action = 'trash'
 		`)
 	if err != nil {
-		return TrashFilesResponse{}, err
+		return TrashFilesResponse{}, fmt.Errorf("failed to query files to trash: %w", err)
 	}
 	defer rows.Close()
 

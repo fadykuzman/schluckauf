@@ -15,35 +15,20 @@ const (
 	StatusArchived GroupStatus = "archived"
 )
 
-type FileGroup struct {
-	ID            int
-	Hash          string
-	Size          int64
-	FileCount     int
-	UpdatedAt     *time.Time
-	Status        GroupStatus
-	ThumbnailPath string
+type ImageGroup struct {
+	ID            int         `json:"id"`
+	Hash          string      `json:"hash"`
+	Size          int64       `json:"size"`
+	ImageCount    int         `json:"imageCount"`
+	UpdatedAt     *time.Time  `json:"updatedAt"`
+	Status        GroupStatus `json:"status"`
+	ThumbnailPath string      `json:"thumbnailPath"`
 }
 
 type ImageGroupStats struct {
-	Pending           int
-	Decided           int
-	FilesToTrashCount int
-}
-
-func (s *Storage) CreateGroup(hash string, size int64, fileCount int) (int, error) {
-	result, err := s.db.Exec(
-		"INSERT INTO file_groups (hash, size, file_count) VALUES (?, ?, ?)",
-		hash, size, fileCount,
-	)
-	if err != nil {
-		return 0, err
-	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-	return int(id), nil
+	Pending            int `json:"pending"`
+	Decided            int `json:"decided"`
+	ImagesToTrashCount int `json:"imagesToTrashCount"`
 }
 
 func (s *Storage) CreateImageGroup(hash []int, size int64, fileCount int) (int, error) {
@@ -63,7 +48,7 @@ func (s *Storage) CreateImageGroup(hash []int, size int64, fileCount int) (int, 
 	return int(id), nil
 }
 
-func (s *Storage) ListImageGroups() ([]FileGroup, error) {
+func (s *Storage) ListImageGroups() ([]ImageGroup, error) {
 	groupRows, err := s.db.Query(
 		`SELECT g.id, g.hash, g.size, g.image_count, g.updated_at, i.path as thumbnail_path,
 			CASE
@@ -84,15 +69,15 @@ func (s *Storage) ListImageGroups() ([]FileGroup, error) {
 	}
 	defer groupRows.Close()
 
-	var groups []FileGroup
+	var groups []ImageGroup
 	for groupRows.Next() {
-		var g FileGroup
+		var g ImageGroup
 
 		if err := groupRows.Scan(
 			&g.ID,
 			&g.Hash,
 			&g.Size,
-			&g.FileCount,
+			&g.ImageCount,
 			&g.UpdatedAt,
 			&g.ThumbnailPath,
 			&g.Status,
@@ -146,7 +131,7 @@ func (s *Storage) GetImageGroupStats() (ImageGroupStats, error) {
 
 	row := s.db.QueryRow("SELECT COUNT(*) FROM images WHERE action = 'trash'")
 
-	if err := row.Scan(&gs.FilesToTrashCount); err != nil {
+	if err := row.Scan(&gs.ImagesToTrashCount); err != nil {
 		return gs, err
 	}
 

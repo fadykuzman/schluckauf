@@ -32,21 +32,21 @@ async function loadGroups() {
       groups.forEach(group => {
         const item = document.createElement('div');
         item.className = 'group-item';
-        const reviewString = group.UpdatedAt ? `last reviewed at: ${group.UpdatedAt}` : "Not yet reviewed"
+        const reviewString = group.updatedAt ? `last reviewed at: ${group.updatedAt}` : "Not yet reviewed"
+        console.log(group)
 
         item.innerHTML = `
-      <img src='/api/image?path=${encodeURIComponent(group.ThumbnailPath)}'>
+      <img src='/api/image?path=${encodeURIComponent(group.thumbnailPath)}'>
       <div class="group-info">
-        ${group.FileCount} files
-        (${formatBytes(group.Size)} each)
-        <span class="group-status" data-status="${group.Status.toLowerCase()}">${group.Status}</span>
+        ${group.imageCount} files
+        (${formatBytes(group.size)} each)
+        <span class="group-status" data-status="${group.status.toLowerCase()}">${group.status}</span>
         <span class="group-updated-at">${reviewString}</span>
       </div>
     `;
-        item.onclick = () => showGroup(group.ID);
+        item.onclick = () => showGroup(group.id);
         container.appendChild(item)
       });
-
     }
   } catch (error) {
     showError('Failed to load group')
@@ -69,7 +69,7 @@ async function showGroup(id) {
 
     imagesGrid.innerHTML = ''
     files.forEach((file, index) => {
-      const fileDiv = createFileDiv(file, index)
+      const fileDiv = createImageDiv(file, index)
       imagesGrid.appendChild(fileDiv)
     });
 
@@ -77,7 +77,6 @@ async function showGroup(id) {
     backBtn.onclick = () => {
       groupContainer.hidden = true
     }
-
   } catch (error) {
     showError('Failed to load Group')
     console.error(error)
@@ -116,17 +115,17 @@ async function updateFileActionById(groupId, fileId, action) {
   }
 }
 
-function createFileDiv(file, index) {
+function createImageDiv(image, index) {
   const fileDiv = document.createElement('div')
 
-  fileDiv.dataset.fileId = file.ID
-  fileDiv.dataset.groupId = file.GroupID
+  fileDiv.dataset.fileId = image.id
+  fileDiv.dataset.groupId = image.groupId
 
-  createImageElement(file, index, fileDiv)
+  createImageElement(image, index, fileDiv)
 
   const duplicateImage = fileDiv.querySelector(".duplicate-image")
 
-  applyActionState(duplicateImage, file.Action)
+  applyActionState(duplicateImage, image.action)
 
   return fileDiv
 }
@@ -141,14 +140,14 @@ function applyActionState(element, action) {
   }
 }
 
-function createImageElement(file, index, fileDiv) {
-  fileDiv.className = 'image-item';
+function createImageElement(image, index, imageDiv) {
+  imageDiv.className = 'image-item';
 
-  fileDiv.innerHTML = `
+  imageDiv.innerHTML = `
     <div class="duplicate-image">
-      <img src="/api/image?path=${encodeURIComponent(file.Path)}" alt="Image ${index + 1}">
+      <img src="/api/image?path=${encodeURIComponent(image.path)}" alt="Image ${index + 1}">
       <div class="metadata">
-        <div><strong>Size: </strong> ${formatBytes(file.Filesize)}</div>
+        <div><strong>Size: </strong> ${formatBytes(image.imageSize)}</div>
       </div>
     </div>
       <div><button class="keep-button">Keep</button><button class="trash-button">Trash</button></div>
@@ -156,9 +155,9 @@ function createImageElement(file, index, fileDiv) {
 
   const pathDiv = document.createElement('div')
   pathDiv.innerHTML = '<strong>Path:</strong>'
-  pathDiv.append(file.Path)
+  pathDiv.append(image.Path)
 
-  const metaDataDiv = fileDiv.querySelector('.metadata')
+  const metaDataDiv = imageDiv.querySelector('.metadata')
   metaDataDiv.prepend(pathDiv)
 
 }
@@ -173,10 +172,10 @@ async function loadGroupStatus() {
   try {
     const stats = await fetchJSON("/api/groups/stats")
 
-    updateTrashButtonState(stats.FilesToTrashCount)
+    updateTrashButtonState(stats.imagesToTrashCount)
 
-    document.getElementById('pending-count').textContent = stats.Pending
-    document.getElementById('decided-count').textContent = stats.Decided
+    document.getElementById('pending-count').textContent = stats.pending
+    document.getElementById('decided-count').textContent = stats.decided
 
   } catch (error) {
     showError("Failed to load Groups Statistics")
