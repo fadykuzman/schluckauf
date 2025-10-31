@@ -34,7 +34,7 @@ func (h *Handler) ServeImage(w http.ResponseWriter, r *http.Request) {
 }
 
 type UpdateImageActionRequest struct {
-	Action storage.FileAction `json:"action"`
+	Action storage.ImageAction `json:"action"`
 }
 
 func (h *Handler) UpdateImageAction(w http.ResponseWriter, r *http.Request) {

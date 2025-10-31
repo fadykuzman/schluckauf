@@ -22,7 +22,7 @@ func main() {
 	http.HandleFunc("/health", h.Health)
 	http.HandleFunc("GET /api/groups/{id}", h.GetGroupImages)
 	http.HandleFunc("/api/image", h.ServeImage)
-	http.HandleFunc("POST /api/groups/{gid}/files/{fid}", h.UpdateFileAction)
+	http.HandleFunc("POST /api/groups/{gid}/files/{fid}", h.UpdateImageAction)
 	http.HandleFunc("GET /api/groups/stats", h.GetGroupStats)
 	http.HandleFunc("POST /api/files/actions/trash", h.TrashImages)
 	http.HandleFunc("POST /api/scan", h.ScanDirectory)

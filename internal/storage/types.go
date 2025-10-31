@@ -1,8 +1,8 @@
 package storage
 
 const (
-	ActionPending FileAction = "pending"
-	ActionKeep    FileAction = "keep"
-	ActionTrash   FileAction = "trash"
-	ActionTrashed FileAction = "trashed"
+	ActionPending ImageAction = "pending"
+	ActionKeep    ImageAction = "keep"
+	ActionTrash   ImageAction = "trash"
+	ActionTrashed ImageAction = "trashed"
 )

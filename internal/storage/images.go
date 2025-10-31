@@ -12,11 +12,11 @@ import (
 type ImageAction string
 
 type Image struct {
-	ID        int        `json:"id"`
-	GroupID   int        `json:"groupId"`
-	Path      string     `json:"path"`
-	Imagesize int64      `json:"imageSize"`
-	Action    FileAction `json:"action"`
+	ID        int         `json:"id"`
+	GroupID   int         `json:"groupId"`
+	Path      string      `json:"path"`
+	Imagesize int64       `json:"imageSize"`
+	Action    ImageAction `json:"action"`
 }
 
 type ImageToTrash struct {
@@ -72,7 +72,7 @@ func (s *Storage) GetGroupImages(groupID int) ([]Image, error) {
 	return images, nil
 }
 
-func (s *Storage) UpdateImageAction(groupID int, fileID int, action FileAction) error {
+func (s *Storage) UpdateImageAction(groupID int, fileID int, action ImageAction) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
