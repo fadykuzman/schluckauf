@@ -37,7 +37,7 @@ func (s *Storage) CreateImage(groupID int, path string, filesize int64) (int, er
 
 func (s *Storage) GetGroupImages(groupID int) ([]File, error) {
 	rows, err := s.db.Query(
-		"SELECT id, group_id, path, filesize, action FROM images WHERE group_id=?",
+		"SELECT id, group_id, path, image_size, action FROM images WHERE group_id=?",
 		groupID,
 	)
 	if err != nil {

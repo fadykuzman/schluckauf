@@ -56,7 +56,7 @@ func main() {
 
 	http.HandleFunc("GET /api/groups", h.ListImageGroups)
 	http.HandleFunc("/health", h.Health)
-	http.HandleFunc("GET /api/groups/images/{id}", h.GetGroupImages)
+	http.HandleFunc("GET /api/groups/{id}", h.GetGroupImages)
 	http.HandleFunc("/api/image", h.ServeImage)
 	http.HandleFunc("POST /api/groups/{gid}/files/{fid}", h.UpdateFileAction)
 	http.HandleFunc("GET /api/groups/stats", h.GetGroupStats)

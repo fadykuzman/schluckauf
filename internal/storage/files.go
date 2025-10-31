@@ -68,7 +68,7 @@ func (s *Storage) UpdateFileAction(groupID int, fileID int, action FileAction) e
 	defer tx.Rollback()
 
 	_, err = tx.Exec(
-		"UPDATE files SET action = ? WHERE id = ?",
+		"UPDATE images SET action = ? WHERE id = ?",
 		action, fileID,
 	)
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *Storage) UpdateFileAction(groupID int, fileID int, action FileAction) e
 	}
 
 	_, errGroup := tx.Exec(
-		" UPDATE groups SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+		" UPDATE image_groups SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
 		groupID,
 	)
 
@@ -93,11 +93,11 @@ type FileToTrash struct {
 }
 
 type TrashFilesResponse struct {
-	MovedCount      int
-	FailedCount     int
-	PartialFailures int
-	TotalCount      int
-	Errors          []string
+	MovedCount      int      `json:"movedCount"`
+	FailedCount     int      `json:"failedCount"`
+	PartialFailures int      `json:"partialFailures"`
+	TotalCount      int      `json:"totalCount"`
+	Errors          []string `json:"errors"`
 }
 
 func (s *Storage) TrashFiles() (TrashFilesResponse, error) {

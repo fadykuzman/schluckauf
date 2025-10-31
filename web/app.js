@@ -197,18 +197,18 @@ function setupTrashButton() {
         method: 'POST'
       })
 
-      if (response.MovedCount > 0) {
-        showSuccess(`Successfully moved ${response.MovedCount} of ${response.TotalCount} to trash`)
+      if (response.movedCount > 0) {
+        showSuccess(`Successfully moved ${response.movedCount} of ${response.totalCount} to trash`)
       }
 
-      if (response.FailedCount > 0) {
-        showError(`Failed to move ${response.FailedCount} files to trash`)
-        console.log(response.Errors)
+      if (response.failedCount > 0) {
+        showError(`Failed to move ${response.failedCount} files to trash`)
+        console.log(response.errors)
       }
 
-      if (response.PartialFailures > 0) {
+      if (response.partialFailures > 0) {
         showWarning(`Moved to trash but database not updated`)
-        console.warn(response.Errors)
+        console.warn(response.errors)
       }
 
       loadGroupStatus();
