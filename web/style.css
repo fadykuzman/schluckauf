@@ -101,7 +101,7 @@ button:disabled {
 
 .images-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   margin: 20px 0;
 }
@@ -110,11 +110,15 @@ button:disabled {
   background: #f9f9f9;
   padding: 15px;
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
 }
 
 .image-item img {
   width: 100%;
-  height: auto;
+  height: 350px;
+  object-fit: contain;
   border-radius: 4px;
   margin-bottom: 10px;
 }
@@ -122,6 +126,8 @@ button:disabled {
 .metadata {
   font-size: 14px;
   color: #666;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .metadata div {
