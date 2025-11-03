@@ -11,7 +11,6 @@
 <body>
   <header>
     <h1>Schluckauf - Duplicate Reviewer</h1>
-    <button type="submit" id="move-to-trash-button">Move to Trash (<span id="trash-count">0</span>)</button>
   </header>
 
   <main>
@@ -21,6 +20,8 @@
         <span class="pending">Pending: <span id="pending-count">0</span></span>
         <span class="decided">Decided: <span id="decided-count">0</span></span>
       </div>
+
+      <button type="submit" id="move-to-trash-button">Move to Trash (<span id="trash-count">0</span>)</button>
       <form id="scan">
         <input id="scan-directory-input" type="text" placeholder="/home/user/photos" />
         <button type="submit" id="scan-button">Scan for Duplicates</button>
