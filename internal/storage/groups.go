@@ -52,7 +52,11 @@ func (s *Storage) ListImageGroups() ([]ImageGroup, error) {
 	groupRows, err := s.db.Query(
 		`SELECT g.id, g.hash, g.size, g.image_count, g.updated_at, i.path as thumbnail_path,
 			CASE
-				WHEN SUM(CASE WHEN i.action = 'pending' THEN 1 ELSE 0 END) > 0
+				WHEN SUM(
+					CASE
+						WHEN i.action = 'pending' THEN 1 
+						ELSE 0 END
+					) > 0
 		    THEN 'pending'
 		    ELSE 'decided'
 		  END as status
@@ -64,6 +68,28 @@ func (s *Storage) ListImageGroups() ([]ImageGroup, error) {
 		  CASE WHEN status = 'pending' OR status = 'trashed' THEN 0 ELSE 1 END,
 		  updated_at DESC NULLS LAST
 		`)
+	// SELECT
+	//     g.id,
+	//     g.hash,
+	//     g.size,
+	//     g.image_count,
+	//     g.updated_at,
+	//     (SELECT path FROM images WHERE group_id = g.id ORDER BY id LIMIT 1) as thumbnail_path,
+	//     CASE
+	//         WHEN SUM(CASE WHEN i.action IN ('pending', 'trashed') THEN 1 ELSE 0 END) > 0
+	//         THEN 'pending'
+	//         ELSE 'decided'
+	//     END as status
+	// FROM image_groups g
+	// LEFT JOIN images i ON g.id = i.group_id
+	// GROUP BY g.id
+	// ORDER BY
+	//     CASE
+	//         WHEN SUM(CASE WHEN i.action IN ('pending', 'trashed') THEN 1 ELSE 0 END) > 0
+	//         THEN 0
+	//         ELSE 1
+	//     END,
+	//     g.updated_at DESC
 	if err != nil {
 		return nil, err
 	}
