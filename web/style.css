@@ -235,6 +235,10 @@ button.trash-button {
   font-size: 1rem;
 }
 
+.groups-stats button {
+  margin-top: 0;
+}
+
 .pending,
 .decided {
   padding: 6px 12px;
