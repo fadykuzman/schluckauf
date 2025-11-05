@@ -29,24 +29,25 @@ async function loadGroups() {
       container.appendChild(item)
 
     } else {
-      groups.forEach(group => {
+      for (const group of groups) {
         const item = document.createElement('div');
-        item.className = 'group-item';
+        item.className = 'duplicate-group';
         const reviewString = group.updatedAt ? `last reviewed at: ${group.updatedAt}` : "Not yet reviewed"
-        console.log(group)
 
         item.innerHTML = `
-      <img src='/api/image?path=${encodeURIComponent(group.thumbnailPath)}'>
-      <div class="group-info">
-        ${group.imageCount} files
-        (${formatBytes(group.size)} each)
-        <span class="group-status" data-status="${group.status.toLowerCase()}">${group.status}</span>
-        <span class="group-updated-at">${reviewString}</span>
-      </div>
+          <div class="group-info">
+            ${group.imageCount} files
+            (${formatBytes(group.size)} each)
+            <span class="group-status" data-status="${group.status.toLowerCase()}">${group.status}</span>
+            <span class="group-updated-at">${reviewString}</span>
+          </div>
     `;
-        item.onclick = () => showGroup(group.id);
+
+        const imagesGrid = await showGroup(group.id)
         container.appendChild(item)
-      });
+        container.appendChild(imagesGrid)
+
+      };
     }
   } catch (error) {
     showError('Failed to load group')
@@ -58,25 +59,15 @@ async function showGroup(id) {
   try {
     const files = await fetchJSON(`/api/groups/${id}`);
 
-    var groupContainer = document.querySelector('.group-detail-view')
-    groupContainer.hidden = false
-
-    var groupTitle = document.querySelector('.duplicate-group-title')
-
-    groupTitle.textContent = `Duplicate Group ${id}`
-
-    const imagesGrid = document.querySelector('.images-grid')
+    var imagesGrid = document.createElement('div')
+    imagesGrid.className = 'images-grid'
 
     imagesGrid.innerHTML = ''
     files.forEach((file, index) => {
       const fileDiv = createImageDiv(file, index)
       imagesGrid.appendChild(fileDiv)
     });
-
-    const backBtn = document.querySelector('.back-to-groups-button');
-    backBtn.onclick = () => {
-      groupContainer.hidden = true
-    }
+    return imagesGrid
   } catch (error) {
     showError('Failed to load Group')
     console.error(error)
