@@ -1,15 +1,72 @@
 let selectedImageIndex = null
+let currentGroupIndex = 0
 
 function selectImage(index) {
   document.querySelectorAll('.image-item').forEach(item => {
     item.classList.remove('selected')
   })
 
-  const imageItems = document.querySelectorAll('.image-item')
+  selectedImageIndex = null
+
+  const groups = document.querySelectorAll('.duplicate-group')
+  if (groups.length === 0 || !groups[currentGroupIndex]) {
+    return
+  }
+
+
+  const imageItems = groups[currentGroupIndex].querySelectorAll('.image-item')
   if (index >= 1 && index <= imageItems.length) {
     selectedImageIndex = index
     imageItems[index - 1].classList.add('selected')
   }
+}
+
+function navigateToGroup(direction) {
+  const groups = document.querySelectorAll('.duplicate-group')
+  if (groups.length === 0) return
+
+  if (direction === 'down') {
+    currentGroupIndex = Math.min(currentGroupIndex + 1, groups.length - 1)
+  } else if (direction === 'up') {
+    currentGroupIndex = Math.max(currentGroupIndex - 1, 0)
+  }
+
+  const targetGroup = groups[currentGroupIndex]
+  const firstImage = targetGroup.querySelector('.image-item')
+
+  if (firstImage) {
+    const images = targetGroup.querySelectorAll('.image-item')
+    selectImage(1)
+
+    targetGroup.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+}
+
+function navigateWithinGroup(direction) {
+  const groups = document.querySelectorAll('.duplicate-group')
+  if (groups.length === 0) {
+    return
+  }
+
+  const currentGroup = groups[currentGroupIndex]
+  const images = currentGroup.querySelectorAll('.image-item')
+
+  if (images.length === 0) {
+    return
+  }
+
+  let newIndex = selectedImageIndex || 1
+
+  if (direction === 'right') {
+    newIndex = Math.min(newIndex + 1, images.length)
+  } else if (direction === 'left') {
+    newIndex = Math.max(newIndex - 1, 1)
+  }
+
+  selectImage(newIndex)
+
+  images[newIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+
 }
 
 
@@ -210,9 +267,10 @@ function updateTrashButtonState(count) {
 
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
-    const detailView = document.querySelector('.group-detail-view')
 
-    if (detailView.hidden) return
+    if (document.activeElement.tagName === 'INPUT') {
+      return
+    }
 
     if (e.key >= '1' && e.key <= '9') {
       e.preventDefault()
@@ -222,7 +280,31 @@ function setupKeyboardShortcuts() {
 
     const key = e.key.toLowerCase()
 
-    if (key === 'k' && selectedImageIndex != null) {
+    if (e.key === 'ArrowDown' || key === 'k') {
+      e.preventDefault()
+      navigateToGroup('down')
+      return
+    }
+
+    if (e.key === 'ArrowUp' || key === 'i') {
+      e.preventDefault()
+      navigateToGroup('up')
+      return
+    }
+
+    if (e.key === 'ArrowRight' || key === 'l') {
+      e.preventDefault()
+      navigateWithinGroup('right')
+      return
+    }
+
+    if (e.key === 'ArrowLeft' || key === 'h') {
+      e.preventDefault()
+      navigateWithinGroup('left')
+      return
+    }
+
+    if (e.key === 'Enter' && selectedImageIndex != null) {
       e.preventDefault()
       const selectedItem = document.querySelector('.image-item.selected')
       if (selectedItem) {
@@ -230,7 +312,7 @@ function setupKeyboardShortcuts() {
         const groupId = parseInt(selectedItem.dataset.groupId)
         updateFileActionById(groupId, fileId, "keep")
       }
-    } else if (key === 'd' && selectedImageIndex != null) {
+    } else if (e.key === ' ' && selectedImageIndex != null) {
       e.preventDefault()
       const selectedItem = document.querySelector('.image-item.selected')
       if (selectedItem) {
@@ -240,8 +322,7 @@ function setupKeyboardShortcuts() {
       }
     } else if (key === 'escape') {
       e.preventDefault()
-      detailView.hidden = true
-
+      selectImage(null)
     }
   })
 }
