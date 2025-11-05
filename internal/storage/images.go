@@ -165,7 +165,7 @@ func (s *Storage) TrashImages() (TrashImagesResponse, error) {
 
 func (s *Storage) updateDBForTrashedImage(fileID int, newPath string) error {
 	log.Printf("Updating image %d to be %s", fileID, ActionTrashed)
-	result, err := s.db.Exec(`
+	_, err := s.db.Exec(`
 				UPDATE images 
 				SET action = ?, 
 				path = ? 
@@ -174,8 +174,6 @@ func (s *Storage) updateDBForTrashedImage(fileID int, newPath string) error {
 		newPath,
 		fileID,
 	)
-
-	fmt.Printf("%s", result)
 	if err != nil {
 		log.Printf("Error while Updating image %d to be %s", fileID, ActionTrashed)
 		return err
