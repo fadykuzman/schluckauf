@@ -14,27 +14,24 @@ function selectImage(index) {
 
 
 async function loadGroups() {
-  var groupContainer = document.querySelector('.group-detail-view')
-  groupContainer.hidden = true
-
   try {
     const groups = await fetchJSON('/api/groups')
 
-    const container = document.getElementById('groups-container');
-    container.innerHTML = '';
+    const groupsContainer = document.getElementById('groups-container');
+    groupsContainer.innerHTML = '';
 
     if (groups === null || groups.length === 0) {
       const item = document.createElement('div');
       item.textContent = "No duplicates found yet"
-      container.appendChild(item)
+      groupsContainer.appendChild(item)
 
     } else {
       for (const group of groups) {
-        const item = document.createElement('div');
-        item.className = 'duplicate-group';
+        const duplicateGroupDiv = document.createElement('div');
+        duplicateGroupDiv.className = 'duplicate-group';
         const reviewString = group.updatedAt ? `last reviewed at: ${group.updatedAt}` : "Not yet reviewed"
 
-        item.innerHTML = `
+        duplicateGroupDiv.innerHTML = `
           <div class="group-info">
             ${group.imageCount} files
             (${formatBytes(group.size)} each)
@@ -44,8 +41,8 @@ async function loadGroups() {
     `;
 
         const imagesGrid = await createImagesGrid(group.id)
-        container.appendChild(item)
-        container.appendChild(imagesGrid)
+        groupsContainer.appendChild(duplicateGroupDiv)
+        duplicateGroupDiv.appendChild(imagesGrid)
 
       };
     }
