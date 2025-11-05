@@ -34,7 +34,6 @@ async function loadGroups() {
         duplicateGroupDiv.innerHTML = `
           <div class="group-info">
             ${group.imageCount} files
-            (${formatBytes(group.size)} each)
             <span class="group-status" data-status="${group.status.toLowerCase()}">${group.status}</span>
             <span class="group-updated-at">${reviewString}</span>
           </div>
@@ -144,14 +143,14 @@ async function updateFileActionById(groupId, fileId, action) {
         action: action
       })
     })
-    loadGroupStatus()
+    loadGroupsStatus()
   } catch (error) {
     applyActionState(duplicateImage, previousAction)
     showError(`Failed to ${action} file`)
   }
 }
 
-async function loadGroupStatus() {
+async function loadGroupsStatus() {
   try {
     const stats = await fetchJSON("/api/groups/stats")
 
@@ -193,7 +192,7 @@ function setupTrashButton() {
         console.warn(response.errors)
       }
 
-      loadGroupStatus();
+      loadGroupsStatus();
     } catch (error) {
       console.error(error)
       showError("Failed to move files to trash")
@@ -289,7 +288,7 @@ function setupScanForm() {
       showSuccess(response.message || `Found ${response.groupCount} duplicate groups`)
 
       await loadGroups()
-      await loadGroupStatus()
+      await loadGroupsStatus()
     } catch (error) {
       showError('Scan failed ' + error.message)
     } finally {
@@ -302,7 +301,7 @@ function setupScanForm() {
 
 loadGroups()
 setupTrashButton()
-loadGroupStatus()
+loadGroupsStatus()
 setupFileActionButton()
 setupKeyboardShortcuts()
 setupScanForm()

@@ -16,13 +16,10 @@ const (
 )
 
 type ImageGroup struct {
-	ID            int         `json:"id"`
-	Hash          string      `json:"hash"`
-	Size          int64       `json:"size"`
-	ImageCount    int         `json:"imageCount"`
-	UpdatedAt     *time.Time  `json:"updatedAt"`
-	Status        GroupStatus `json:"status"`
-	ThumbnailPath string      `json:"thumbnailPath"`
+	ID         int         `json:"id"`
+	ImageCount int         `json:"imageCount"`
+	UpdatedAt  *time.Time  `json:"updatedAt"`
+	Status     GroupStatus `json:"status"`
 }
 
 type ImageGroupStats struct {
@@ -50,46 +47,25 @@ func (s *Storage) CreateImageGroup(hash []int, size int64, fileCount int) (int, 
 
 func (s *Storage) ListImageGroups() ([]ImageGroup, error) {
 	groupRows, err := s.db.Query(
-		`SELECT g.id, g.hash, g.size, g.image_count, g.updated_at, i.path as thumbnail_path,
+		`
+		SELECT g.id, g.image_count, g.updated_at,
 			CASE
 				WHEN SUM(
 					CASE
 						WHEN i.action = 'pending' THEN 1 
-						ELSE 0 END
+						ELSE 0 
+						END
 					) > 0
 		    THEN 'pending'
 		    ELSE 'decided'
 		  END as status
 		FROM image_groups g
 		LEFT JOIN images i ON g.id = i.group_id
-		WHERE i.id = (SELECT MIN(id) FROM images WHERE group_id = g.id)
 		GROUP BY g.id
 		ORDER BY
-		  CASE WHEN status = 'pending' OR status = 'trashed' THEN 0 ELSE 1 END,
+		  CASE WHEN status = 'pending' THEN 0 ELSE 1 END,
 		  updated_at DESC NULLS LAST
 		`)
-	// SELECT
-	//     g.id,
-	//     g.hash,
-	//     g.size,
-	//     g.image_count,
-	//     g.updated_at,
-	//     (SELECT path FROM images WHERE group_id = g.id ORDER BY id LIMIT 1) as thumbnail_path,
-	//     CASE
-	//         WHEN SUM(CASE WHEN i.action IN ('pending', 'trashed') THEN 1 ELSE 0 END) > 0
-	//         THEN 'pending'
-	//         ELSE 'decided'
-	//     END as status
-	// FROM image_groups g
-	// LEFT JOIN images i ON g.id = i.group_id
-	// GROUP BY g.id
-	// ORDER BY
-	//     CASE
-	//         WHEN SUM(CASE WHEN i.action IN ('pending', 'trashed') THEN 1 ELSE 0 END) > 0
-	//         THEN 0
-	//         ELSE 1
-	//     END,
-	//     g.updated_at DESC
 	if err != nil {
 		return nil, err
 	}
@@ -101,11 +77,8 @@ func (s *Storage) ListImageGroups() ([]ImageGroup, error) {
 
 		if err := groupRows.Scan(
 			&g.ID,
-			&g.Hash,
-			&g.Size,
 			&g.ImageCount,
 			&g.UpdatedAt,
-			&g.ThumbnailPath,
 			&g.Status,
 		); err != nil {
 			return nil, err
