@@ -11,12 +11,7 @@
 <body>
   <header>
     <h1>Schluckauf - Duplicate Reviewer</h1>
-    <div class="keyboard-shortcuts">
-      <strong>keyboard-shortcuts:</strong>
-      <kbd>1-9</kbd> Select image
-      <kbd>K</kbd> Keep
-      <kbd>D</kbd> Trash
-      <kbd>Esc</kbd> Back
+    <div class="keyboard-shortcuts" id="shortcut-hints">
     </div>
   </header>
 
@@ -37,9 +32,59 @@
       </div>
     </div>
   </main>
+  <div id="help-modal" class="help-modal" hidden>
+    <div class="help-modal-content">
+      <div class="help-modal-header">
+        <h2>Keyboard Shortcuts</h2>
+        <button class="help-modal-close">&times;</button>
+      </div>
+      <div class="help-modal-body">
+        <div class="help-section">
+          <h3>Navigation</h3>
+          <div class="help-item">
+            <kbd>↑</kbd> <kbd>↓</kbd> or <kbd>J</kbd> <kbd>K</kbd>
+            <span>Navigate between groups</span>
+          </div>
+          <div class="help-item">
+            <kbd>←</kbd> <kbd>→</kbd> or <kbd>H</kbd> <kbd>L</kbd>
+            <span>Navigate images within group</span>
+          </div>
+          <div class="help-item">
+            <kbd>1-9</kbd>
+            <span>Jump to specific image in group</span>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h3>Actions</h3>
+          <div class="help-item">
+            <kbd>Enter</kbd>
+            <span>Mark selected image as Keep</span>
+          </div>
+          <div class="help-item">
+            <kbd>Space</kbd>
+            <span>Mark selected image as Trash</span>
+          </div>
+          <div class="help-item">
+            <kbd>Esc</kbd>
+            <span>Deselect current image</span>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h3>Other</h3>
+          <div class="help-item">
+            <kbd>?</kbd>
+            <span>Show this help</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="utils.js"></script>
   <script src="app.js"></script>
 </body>
+
 
 </html>

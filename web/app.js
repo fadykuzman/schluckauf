@@ -19,6 +19,8 @@ function selectImage(index) {
     selectedImageIndex = index
     imageItems[index - 1].classList.add('selected')
   }
+
+  updateShortcutHints()
 }
 
 function navigateToGroup(direction) {
@@ -66,7 +68,33 @@ function navigateWithinGroup(direction) {
   selectImage(newIndex)
 
   images[newIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
 
+function updateShortcutHints() {
+  const hintsDiv = document.getElementById('shortcut-hints')
+
+  if (selectedImageIndex != null) {
+    hintsDiv.innerHTML = `
+      <strong>Shortcuts:</strong>
+      <kbd>←→</kbd> or <kbd>H/L</kbd> Switch Image |
+      <kbd>↑↓</kbd> or <kbd>J/K</kbd> Switch Group |
+      <kbd>Enter</kbd> Keep |
+      <kbd>Space</kbd> Trash |
+      <kbd>Esc</kbd> Deselect 
+    `
+  } else {
+    hintsDiv.innerHTML = `
+      <strong>Shortcuts:</strong>
+      <kbd>↑↓</kbd> or <kbd>J/K</kbd> Navigate Groups |
+      <kbd>1-9</kbd> Select Image |
+      <kbd>?</kbd> Help
+    `
+  }
+}
+
+function toggleHelpModal() {
+  const modal = document.getElementById('help-modal')
+  modal.hidden = !modal.hidden
 }
 
 
@@ -106,6 +134,7 @@ async function loadGroups() {
     showError('Failed to load group')
     console.error(error)
   }
+  updateShortcutHints()
 }
 
 async function createImagesGrid(id) {
@@ -324,7 +353,13 @@ function setupKeyboardShortcuts() {
       e.preventDefault()
       selectImage(null)
     }
+    if (key === '?' || (e.shiftKey && key === '/' || (e.shiftKey && key === 'ß'))) {
+      e.preventDefault()
+      toggleHelpModal()
+      return
+    }
   })
+
 }
 
 function setupFileActionButton() {
@@ -383,9 +418,22 @@ function setupScanForm() {
 }
 
 
+function setupHelpModalCloseButton() {
+  document.querySelector('.help-modal-close').addEventListener('click', toggleHelpModal)
+
+  document.getElementById('help-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'help-modal') {
+      toggleHelpModal()
+    }
+  })
+}
+
+
 loadGroups()
 setupTrashButton()
 loadGroupsStatus()
 setupFileActionButton()
 setupKeyboardShortcuts()
 setupScanForm()
+updateShortcutHints()
+setupHelpModalCloseButton()
