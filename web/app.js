@@ -192,6 +192,7 @@ function setupTrashButton() {
         console.warn(response.errors)
       }
 
+      loadGroups()
       loadGroupsStatus();
     } catch (error) {
       console.error(error)
@@ -259,6 +260,8 @@ function setupFileActionButton() {
       const fileId = parseInt(closest.dataset.fileId)
       await updateFileActionById(groupId, fileId, 'trash')
     }
+    loadGroups()
+    loadGroupsStatus()
   })
 }
 
