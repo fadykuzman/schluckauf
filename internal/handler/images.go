@@ -2,10 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/fadykuzman/schluckauf/internal/storage"
 )
@@ -21,6 +23,18 @@ func (h *Handler) ServeImage(w http.ResponseWriter, r *http.Request) {
 	absPath, err := filepath.Abs(cleanPath)
 	if err != nil {
 		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+
+	baseDir := "/photos"
+	absBase, err := filepath.Abs(baseDir)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Server configuration error (%v)", err), http.StatusInternalServerError)
+		return
+	}
+
+	if !strings.HasPrefix(absPath, absBase) {
+		http.Error(w, "Access denied", http.StatusForbidden)
 		return
 	}
 
