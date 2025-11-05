@@ -43,7 +43,7 @@ async function loadGroups() {
           </div>
     `;
 
-        const imagesGrid = await showGroup(group.id)
+        const imagesGrid = await createImagesGrid(group.id)
         container.appendChild(item)
         container.appendChild(imagesGrid)
 
@@ -55,7 +55,7 @@ async function loadGroups() {
   }
 }
 
-async function showGroup(id) {
+async function createImagesGrid(id) {
   try {
     const files = await fetchJSON(`/api/groups/${id}`);
 
@@ -74,6 +74,54 @@ async function showGroup(id) {
   }
 }
 
+function createImageDiv(image, index) {
+  const fileDiv = document.createElement('div')
+
+  fileDiv.dataset.fileId = image.id
+  fileDiv.dataset.groupId = image.groupId
+
+  createImageElement(image, index, fileDiv)
+
+  const duplicateImage = fileDiv.querySelector(".duplicate-image")
+
+  applyActionState(duplicateImage, image.action)
+
+  return fileDiv
+}
+
+function createImageElement(image, index, imageDiv) {
+  imageDiv.className = 'image-item';
+
+  imageDiv.innerHTML = `
+    <div class="duplicate-image">
+      <img src="/api/image?path=${encodeURIComponent(image.path)}" alt="Image ${index + 1}">
+      <div class="metadata">
+        <div><strong>Size: </strong> ${formatBytes(image.imageSize)}</div>
+      </div>
+    </div>
+    <div class="action-buttons">
+      <button class="keep-button">Keep</button>
+      <button class="trash-button">Trash</button>
+    </div>
+    `;
+
+  const pathDiv = document.createElement('div')
+  pathDiv.innerHTML = '<strong>Path:</strong>'
+  pathDiv.append(image.path)
+
+  const metaDataDiv = imageDiv.querySelector('.metadata')
+  metaDataDiv.prepend(pathDiv)
+}
+
+function applyActionState(element, action) {
+  if (action === "trash") {
+    element.classList.remove("to-keep")
+    element.classList.add("to-trash")
+  } else if (action === "keep") {
+    element.classList.remove("to-trash")
+    element.classList.add("to-keep")
+  }
+}
 
 async function updateFileActionById(groupId, fileId, action) {
   const file = document.querySelector(`[data-file-id="${fileId}"]`)
@@ -105,54 +153,6 @@ async function updateFileActionById(groupId, fileId, action) {
     showError(`Failed to ${action} file`)
   }
 }
-
-function createImageDiv(image, index) {
-  const fileDiv = document.createElement('div')
-
-  fileDiv.dataset.fileId = image.id
-  fileDiv.dataset.groupId = image.groupId
-
-  createImageElement(image, index, fileDiv)
-
-  const duplicateImage = fileDiv.querySelector(".duplicate-image")
-
-  applyActionState(duplicateImage, image.action)
-
-  return fileDiv
-}
-
-function applyActionState(element, action) {
-  if (action === "trash") {
-    element.classList.remove("to-keep")
-    element.classList.add("to-trash")
-  } else if (action === "keep") {
-    element.classList.remove("to-trash")
-    element.classList.add("to-keep")
-  }
-}
-
-function createImageElement(image, index, imageDiv) {
-  imageDiv.className = 'image-item';
-
-  imageDiv.innerHTML = `
-    <div class="duplicate-image">
-      <img src="/api/image?path=${encodeURIComponent(image.path)}" alt="Image ${index + 1}">
-      <div class="metadata">
-        <div><strong>Size: </strong> ${formatBytes(image.imageSize)}</div>
-      </div>
-    </div>
-      <div><button class="keep-button">Keep</button><button class="trash-button">Trash</button></div>
-    `;
-
-  const pathDiv = document.createElement('div')
-  pathDiv.innerHTML = '<strong>Path:</strong>'
-  pathDiv.append(image.path)
-
-  const metaDataDiv = imageDiv.querySelector('.metadata')
-  metaDataDiv.prepend(pathDiv)
-
-}
-
 
 async function loadGroupStatus() {
   try {
