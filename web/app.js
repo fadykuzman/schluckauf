@@ -247,7 +247,7 @@ function setupKeyboardShortcuts() {
 }
 
 function setupFileActionButton() {
-  const imagesGrid = document.querySelector('.images-grid')
+  const imagesGrid = document.getElementById('groups-container')
   imagesGrid.addEventListener('click', async (e) => {
     if (e.target.classList.contains('keep-button')) {
       const closest = e.target.closest('.image-item')
@@ -300,9 +300,9 @@ function setupScanForm() {
 }
 
 
+loadGroups()
 setupTrashButton()
 loadGroupStatus()
-loadGroups()
 setupFileActionButton()
 setupKeyboardShortcuts()
 setupScanForm()
