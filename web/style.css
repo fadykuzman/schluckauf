@@ -53,6 +53,16 @@ button:disabled {
   flex-direction: column;
 }
 
+.duplicate-group.group-decided {
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.duplicate-group.group-decided .group-status[data-status="decided"] {
+  background: #28a745;
+  color: white;
+}
+
 .group-info {
   padding: 15px;
   display: flex;

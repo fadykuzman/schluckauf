@@ -112,19 +112,26 @@ async function loadGroups() {
 
     } else {
       for (const group of groups) {
+        const imagesGrid = await createImagesGrid(group.id)
+        if (imagesGrid === null || imagesGrid === undefined) {
+          continue
+        }
         const duplicateGroupDiv = document.createElement('div');
         duplicateGroupDiv.className = 'duplicate-group';
+
+        if (group.status.toLowerCase() === 'decided') {
+          duplicateGroupDiv.classList.add('group-decided')
+        }
         const reviewString = group.updatedAt ? `last reviewed at: ${group.updatedAt}` : "Not yet reviewed"
 
         duplicateGroupDiv.innerHTML = `
           <div class="group-info">
-            ${group.imageCount} files
+            ${group.imageCount} images
             <span class="group-status" data-status="${group.status.toLowerCase()}">${group.status}</span>
             <span class="group-updated-at">${reviewString}</span>
           </div>
     `;
 
-        const imagesGrid = await createImagesGrid(group.id)
         groupsContainer.appendChild(duplicateGroupDiv)
         duplicateGroupDiv.appendChild(imagesGrid)
 
@@ -139,13 +146,16 @@ async function loadGroups() {
 
 async function createImagesGrid(id) {
   try {
-    const files = await fetchJSON(`/api/groups/${id}`);
+    const images = await fetchJSON(`/api/groups/${id}`);
+
+    if (images === null || images.length === 0) {
+      return
+    }
 
     var imagesGrid = document.createElement('div')
     imagesGrid.className = 'images-grid'
 
-    imagesGrid.innerHTML = ''
-    files.forEach((file, index) => {
+    images.forEach((file, index) => {
       const fileDiv = createImageDiv(file, index)
       imagesGrid.appendChild(fileDiv)
     });

@@ -63,13 +63,8 @@ func (s *Storage) ListImageGroups() ([]ImageGroup, error) {
 		LEFT JOIN images i ON g.id = i.group_id
 		GROUP BY g.id
 		ORDER BY
-		  CASE 
-					WHEN SUM (CASE WHEN i.action = 'pending' THEN 0 ELSE 1 END) > 0
-					THEN 0
-					ELSE 1
-			END,
-		  g.updated_at DESC,
-			g.id ASC
+		  CASE WHEN status = 'pending' THEN 0 ELSE 1 END,
+		  updated_at DESC NULLS LAST
 		`)
 	if err != nil {
 		return nil, err
