@@ -1,4 +1,6 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
+
+RUN apk add --no-cache gcc=14.2.0-r6 musl-dev=1.2.5-r10
 
 WORKDIR /app
 
@@ -23,14 +25,12 @@ ARG CZKAWKA_CLI_VERSION=10.0.0
 ARG CZKAWKA_CLI_SHA256=b261aba0ca0b1d99d450949be22f9ae172750fe13dc9b40a32209fc8db0fc159
 
 
-RUN wget --progress=dot:giga \
-  https://github.com/qarmin/czkawka/releases/download/${CZKAWKA_CLI_VERSION}/linux_czkawka_cli.tar.xz && \
-  echo "${CZKAWKA_CLI_SHA256}  linux_czkawka_cli.tar.xz" > /tmp/checksum && \
+RUN wget --progress=dot:giga -O /usr/local/bin/czkawka_cli \
+  https://github.com/qarmin/czkawka/releases/download/${CZKAWKA_CLI_VERSION}/linux_czkawka_cli_x86_64 && \
+  echo "${CZKAWKA_CLI_SHA256}  /usr/local/bin/czkawka_cli" > /tmp/checksum && \
   sha256sum -c /tmp/checksum && \
-  tar -xf linux_czkawka_cli.tar.xz && \
-  mv linux_czkawka_cli/czkawka_cli /usr/local/bin/ && \
   chmod +x /usr/local/bin/czkawka_cli && \
-  rm -rf linux_czkawka_cli linux_czkawka_cli.tar.xz
+  rm /tmp/checksum
 
 RUN addgroup -g 1000 appuser && \
   adduser -D -u 1000 -G appuser appuser
