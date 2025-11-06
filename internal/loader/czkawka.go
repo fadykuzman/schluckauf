@@ -1,3 +1,4 @@
+// Package loader provides functions to parse and load duplicate image scan outputs
 package loader
 
 import (

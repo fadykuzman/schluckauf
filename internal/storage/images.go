@@ -117,7 +117,7 @@ func (s *Storage) TrashImages() (TrashImagesResponse, error) {
 	for rows.Next() {
 		var image ImageToTrash
 		if err := rows.Scan(&image.ID, &image.Path); err != nil {
-			return TrashImagesResponse{}, fmt.Errorf("failed to scan image to trash row into ImageToTrash struct", err)
+			return TrashImagesResponse{}, fmt.Errorf("failed to scan image to trash row into ImageToTrash struct (%w)", err)
 		}
 		imagesToTrash = append(imagesToTrash, image)
 	}
