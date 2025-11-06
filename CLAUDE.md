@@ -100,14 +100,13 @@ func validateImagePath(requestedPath, baseDir string) error {
 ### Docker Security
 
 - Run as non-root user (UID 1000)
-- Mount `/photos` as read-only
+- Mount `/photos` as writable (needed for moving files to trash)
 - No outbound network access needed
 
 ### Privacy (GDPR Compliance)
 
 - ❌ No external API calls
 - ❌ No telemetry/analytics
-- ✅ Read-only access to photos
 - ✅ All data stored locally
 - ✅ Export decisions as JSON
 - ✅ Delete all data endpoint
@@ -133,7 +132,7 @@ The keyboard-driven workflow is essential for speed - focus on making this seaml
 ## File System Structure
 
 ```
-/photos   # User's photos (read-only, mounted volume)
+/photos   # User's photos (writable, mounted volume)
 /data     # SQLite database
 /trash    # Deleted files moved here (not permanently deleted)
 /scans    # Czkawka JSON output files
