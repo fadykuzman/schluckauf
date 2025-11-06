@@ -3,9 +3,11 @@ package storage
 import (
 	_ "database/sql"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -194,9 +196,42 @@ func moveImageToTrash(image ImageToTrash, timestamp string) (string, error) {
 	}
 
 	if err := os.Rename(image.Path, destPath); err != nil {
+		if strings.Contains(err.Error(), "invalid cross-device link") {
+			src, err := os.Open(image.Path)
+			if err != nil {
+				return "", fmt.Errorf("failed to open source: %w", err)
+			}
+			defer src.Close()
+
+			dst, err := os.Create(destPath)
+			if err != nil {
+				return "", fmt.Errorf("failed to create destination: %w", err)
+			}
+			defer dst.Close()
+
+			srcInfo, statErr := os.Stat(image.Path)
+			if statErr != nil {
+				return "", fmt.Errorf("could not get Stat of files: %w", statErr)
+			}
+
+			written, copyErr := io.Copy(dst, src)
+			if copyErr != nil {
+				os.Remove(destPath)
+				return "", copyErr
+			}
+			if written != srcInfo.Size() {
+				os.Remove(destPath)
+				return "", fmt.Errorf("incomplete copy: got %d, expected %d", written, srcInfo.Size())
+			}
+			dst.Sync()
+
+			if rmErr := os.Remove(image.Path); rmErr != nil {
+				return "", rmErr
+			}
+			return destPath, nil
+		}
 		return "", err
 	}
-
 	return destPath, nil
 }
 
