@@ -309,13 +309,13 @@ function setupKeyboardShortcuts() {
 
     const key = e.key.toLowerCase()
 
-    if (e.key === 'ArrowDown' || key === 'k') {
+    if (e.key === 'ArrowDown' || key === 'j') {
       e.preventDefault()
       navigateToGroup('down')
       return
     }
 
-    if (e.key === 'ArrowUp' || key === 'i') {
+    if (e.key === 'ArrowUp' || key === 'k') {
       e.preventDefault()
       navigateToGroup('up')
       return
