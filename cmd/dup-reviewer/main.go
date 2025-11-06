@@ -4,13 +4,19 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/fadykuzman/schluckauf/internal/handler"
 	"github.com/fadykuzman/schluckauf/internal/storage"
 )
 
 func main() {
-	store, err := storage.New("./data/duplicates.db")
+	dbPath := os.Getenv("DATABASE_PATH")
+	if dbPath == "" {
+		dbPath = "./data/duplicates.db"
+	}
+
+	store, err := storage.New(dbPath)
 	if err != nil {
 		log.Fatal(fmt.Errorf("error: %+v", err))
 	}

@@ -184,7 +184,11 @@ func (s *Storage) updateDBForTrashedImage(fileID int, newPath string) error {
 }
 
 func moveImageToTrash(image ImageToTrash, timestamp string) (string, error) {
-	destPath := filepath.Join("./trash", timestamp, image.Path)
+	trashPath := os.Getenv("TRASH_DIR")
+	if trashPath == "" {
+		trashPath = "./trash"
+	}
+	destPath := filepath.Join(trashPath, timestamp, image.Path)
 	if err := os.MkdirAll(filepath.Dir(destPath), 0o755); err != nil {
 		return "", err
 	}

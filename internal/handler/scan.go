@@ -47,11 +47,14 @@ func (h *Handler) ScanDirectory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create temp file for JSON output
-	tmpDir := "./tmp"
-	os.MkdirAll(tmpDir, 0o770)
+	scansDir := os.Getenv("SCANS_DIR")
+	if scansDir == "" {
+		scansDir = "./scans"
+	}
 
-	tempFile, err := os.CreateTemp(tmpDir, "czkawka-scan-*.json")
+	os.MkdirAll(scansDir, 0o770)
+
+	tempFile, err := os.CreateTemp(scansDir, "czkawka-scan-*.json")
 	if err != nil {
 		http.Error(w, "Failed to create temp file", http.StatusInternalServerError)
 		return

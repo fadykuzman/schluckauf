@@ -1,6 +1,9 @@
-FROM golang:1.25-alpine AS builder
+FROM golang:1.25-bookworm AS builder
 
-RUN apk add --no-cache gcc=14.2.0-r6 musl-dev=1.2.5-r10
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  gcc \
+  libc6-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -14,12 +17,13 @@ RUN CGO_ENABLED=1 GOOS=linux go build \
   -o /app/dup-reviewer ./cmd/dup-reviewer
 
 
-FROM alpine:3.22
+FROM debian:bookworm-slim
 
-RUN apk add --no-cache \
-  ca-certificates=20250911-r0 \
-  sqlite=3.49.2-r1 \
-  wget=1.25.0-r1
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  sqlite3 \
+  wget \
+  && rm -rf /var/lib/apt/lists/*
 
 ARG CZKAWKA_CLI_VERSION=10.0.0
 ARG CZKAWKA_CLI_SHA256=b261aba0ca0b1d99d450949be22f9ae172750fe13dc9b40a32209fc8db0fc159
@@ -32,8 +36,8 @@ RUN wget --progress=dot:giga -O /usr/local/bin/czkawka_cli \
   chmod +x /usr/local/bin/czkawka_cli && \
   rm /tmp/checksum
 
-RUN addgroup -g 1000 appuser && \
-  adduser -D -u 1000 -G appuser appuser
+RUN groupadd -g 1000 appuser && \
+  useradd -u 1000 -g appuser -m appuser
 
 RUN mkdir -p /photos /data /trash /scans && \
   chown -R appuser:appuser /photos /data /trash /scans
@@ -42,6 +46,10 @@ COPY --from=builder /app/dup-reviewer /usr/local/bin/
 COPY --chown=appuser:appuser web /app/web
 
 USER appuser
+
+ENV DATABASE_PATH=/data/duplicates.db \
+  TRASH_DIR=/trash \
+  SCANS_DIR=/scans
 
 WORKDIR /app
 
