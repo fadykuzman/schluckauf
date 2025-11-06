@@ -49,7 +49,8 @@ USER appuser
 
 ENV DATABASE_PATH=/data/duplicates.db \
   TRASH_DIR=/trash \
-  SCANS_DIR=/scans
+  SCANS_DIR=/scans \
+  PHOTOS_DIR=/photos
 
 WORKDIR /app
 

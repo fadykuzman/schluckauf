@@ -376,7 +376,6 @@ function setupFileActionButton() {
       const fileId = parseInt(closest.dataset.fileId)
       await updateFileActionById(groupId, fileId, 'trash')
     }
-    loadGroups()
     loadGroupsStatus()
   })
 }

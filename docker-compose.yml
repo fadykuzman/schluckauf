@@ -5,8 +5,8 @@ services:
     ports:
       - "8087:8080"
     volumes:
-      - ./test/resources/images:/photos
-      - ./data:/data
-      - ./trash:/trash
-      - ./scans:/scans
+      - ./docker/photos:/photos
+      - ./docker/data:/data
+      - ./docker/trash:/trash
+      - ./docker/scans:/scans
     restart: unless-stopped

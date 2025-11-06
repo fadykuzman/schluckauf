@@ -26,7 +26,10 @@ func (h *Handler) ServeImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseDir := "/photos"
+	baseDir := os.Getenv("PHOTOS_DIR")
+	if baseDir == "" {
+		baseDir = "./test"
+	}
 	absBase, err := filepath.Abs(baseDir)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Server configuration error (%v)", err), http.StatusInternalServerError)

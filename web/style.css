@@ -88,10 +88,11 @@ button:disabled {
 }
 
 .images-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 20px;
   margin: 20px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .image-item {
@@ -101,6 +102,9 @@ button:disabled {
   display: flex;
   flex-direction: column;
   height: 500px;
+  min-width: 300px;
+  max-width: 400px;
+  flex-shrink: 0;
 }
 
 .image-item img {
