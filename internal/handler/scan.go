@@ -64,10 +64,7 @@ func (h *Handler) ScanDirectory(w http.ResponseWriter, r *http.Request) {
 	tempFile.Close()
 
 	// execute the cli command
-	fmt.Printf("Directory: %s\n", req.Directory)
-	fmt.Printf("Temp file: %s\n", tempFile.Name())
 	cmd := exec.Command("czkawka_cli", "image", "-d", req.Directory, "-C", tempFile.Name())
-	fmt.Printf("Cmd: %s\n", cmd)
 
 	output, err := cmd.CombinedOutput()
 	groups, parseErr := loader.ParseImageDuplicates(tempFile.Name())
