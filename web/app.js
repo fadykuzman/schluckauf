@@ -43,6 +43,7 @@ function navigateToGroup(direction) {
 
     targetGroup.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
+  updateGroupProgress()
 }
 
 function navigateWithinGroup(direction) {
@@ -69,6 +70,20 @@ function navigateWithinGroup(direction) {
   selectImage(newIndex)
 
   images[newIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
+
+function updateGroupProgress() {
+  const groups = document.querySelectorAll('.duplicate-group')
+  const indicator = document.getElementById('group-progress-indicator')
+  const indicatorText = document.getElementById('group-progress-text')
+
+  if (groups.length === 0 || currentGroupIndex === -1) {
+    indicator.hidden = true
+    return
+  }
+
+  indicator.hidden = false
+  indicatorText.textContent = `Group ${currentGroupIndex + 1} of ${groups.length}`
 }
 
 function updateShortcutHints() {
@@ -143,6 +158,7 @@ async function loadGroups() {
     console.error(error)
   }
   updateShortcutHints()
+  updateGroupProgress()
 }
 
 async function createImagesGrid(id) {
