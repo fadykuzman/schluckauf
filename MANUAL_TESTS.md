@@ -106,7 +106,7 @@
 
 ---
 
-### 4. Image Selection Within Group ⚠️
+### 4. Image Selection Within Group ✅
 **Objective:** Verify image selection within a duplicate group
 
 **Preconditions:**
@@ -128,13 +128,13 @@
 - `H`/`←` and `L`/`→` navigate images perfectly
 - Clear visual selection indicator present
 - Selection works smoothly
-- ⚠️ When selecting image via number key, view doesn't auto-scroll if image is off-screen
+- View auto-scrolls to selected image when using number keys ✅ (FIXED)
 
-**Status:** ⚠️
+**Status:** ✅
 
 **Notes:**
-- Core selection functionality works
-- UX issue: selecting off-screen image (e.g., press `7` when only 1-3 visible) doesn't bring it into view
+- Issue #23 resolved
+- Auto-scroll now works for all selection methods
 
 ---
 
@@ -227,7 +227,7 @@
 
 ---
 
-### 8. Help Modal ⚠️
+### 8. Help Modal ✅
 **Objective:** Verify help modal displays shortcuts
 
 **Steps:**
@@ -245,13 +245,13 @@
 - All keyboard shortcuts displayed correctly
 - Shortcuts are accurate and readable
 - Modal closes when clicking outside or X button
-- ⚠️ `Esc` key does NOT close the modal (expected behavior missing)
+- `Esc` key closes the modal ✅ (FIXED)
 
-**Status:** ⚠️
+**Status:** ✅
 
 **Notes:**
-- Core functionality works
-- Missing `Esc` to close modal - standard UX pattern
+- Issue #24 resolved
+- Tested locally and in Docker
 
 ---
 
@@ -326,8 +326,8 @@
 
 ## Summary
 - **Total Tests:** 10
-- **Passed:** 7 ✅
-- **Partial (with minor issues):** 3 ⚠️
+- **Passed:** 9 ✅
+- **Partial (with minor issues):** 1 ⚠️
 - **Failed:** 0 ❌
 - **Completion:** 100%
 
@@ -337,18 +337,18 @@
 | 1 | Application Startup | ✅ | Favicon missing (cosmetic) |
 | 2 | Initial Scan | ✅ | Working perfectly |
 | 3 | Group Navigation | ⚠️ | Missing progress counter |
-| 4 | Image Selection | ⚠️ | No auto-scroll on number keys |
+| 4 | Image Selection | ✅ | **FIXED** - Auto-scroll works |
 | 5 | Mark as Keep | ✅ | Working perfectly |
 | 6 | Mark as Trash | ✅ | Working perfectly |
 | 7 | Deselect Image | ✅ | Working perfectly |
-| 8 | Help Modal | ⚠️ | Esc doesn't close modal |
+| 8 | Help Modal | ✅ | **FIXED** - Esc now closes modal |
 | 9 | File Movement | ✅ | Working perfectly |
 | 10 | Data Persistence | ✅ | Working perfectly |
 
-### Issues Logged
-- [#22](https://github.com/fadykuzman/schluckauf/issues/22) - Add progress counter for group navigation
-- [#23](https://github.com/fadykuzman/schluckauf/issues/23) - Auto-scroll to selected image when using number keys
-- [#24](https://github.com/fadykuzman/schluckauf/issues/24) - Add Esc key to close help modal
+### Issues Status
+- [#22](https://github.com/fadykuzman/schluckauf/issues/22) - Add progress counter for group navigation ⏳ **Open**
+- [#23](https://github.com/fadykuzman/schluckauf/issues/23) - Auto-scroll to selected image when using number keys ✅ **Fixed**
+- [#24](https://github.com/fadykuzman/schluckauf/issues/24) - Add Esc key to close help modal ✅ **Fixed**
 
 ### POC Assessment
 **Core functionality:** ✅ **WORKING**
@@ -359,10 +359,10 @@ All critical features are functional:
 - ✅ Mark Keep/Trash decisions
 - ✅ Move files to trash safely
 - ✅ Persist data across sessions
+- ✅ Help modal with keyboard shortcuts
+- ✅ Auto-scroll to selected images
 
-**Minor UX improvements needed:**
-- Progress counter (nice-to-have)
-- Auto-scroll behavior (nice-to-have)
-- Modal keyboard handling (nice-to-have)
+**Remaining UX improvement:**
+- Progress counter (nice-to-have for tracking position)
 
-**Conclusion:** POC is ready for real-world usage. UX enhancements can be addressed in future iterations.
+**Conclusion:** POC is production-ready! Only one minor enhancement remains.

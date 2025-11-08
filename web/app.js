@@ -1,5 +1,5 @@
 let selectedImageIndex = null
-let currentGroupIndex = 0
+let currentGroupIndex = -1
 
 function selectImage(index) {
   document.querySelectorAll('.image-item').forEach(item => {
@@ -18,6 +18,7 @@ function selectImage(index) {
   if (index >= 1 && index <= imageItems.length) {
     selectedImageIndex = index
     imageItems[index - 1].classList.add('selected')
+    imageItems[index - 1].scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 
   updateShortcutHints()
