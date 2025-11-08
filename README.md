@@ -71,6 +71,23 @@ Perfect for users managing photo libraries who want Czkawka's powerful scanning 
 |-----|--------|
 | `?` | Show help modal |
 
+## Development
+
+### Generating Test Images
+
+For testing purposes, you can use the included script to download sample duplicate images:
+
+```bash
+./scripts/download-images.sh
+```
+
+**Prerequisites:**
+- [ImageMagick](https://imagemagick.org/script/download.php) must be installed (used for image validation)
+
+**Known Issues:**
+- Some Picsum image IDs (105, 138, 148, 150, and possibly others) are unavailable or corrupted on picsum.photos
+- The script will automatically retry and skip failed downloads
+
 ## Technical Stack
 
 - **Backend:** Go 1.25.1 (no web frameworks, standard library HTTP server)
