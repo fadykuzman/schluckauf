@@ -19,6 +19,20 @@ Perfect for users managing photo libraries who want Czkawka's powerful scanning 
 - **Keyboard-First Workflow** — Review 100+ duplicate groups in minutes with vim-style shortcuts
 - **Safe Operations** — Files moved to trash directory (not deleted), easy to restore if needed
 
+## Screenshots
+
+### Duplicate Groups Overview
+![Groups Overview](screenshots/03-groups-overview.png)
+
+Review all duplicate groups in a clean, visual interface. Navigate with keyboard shortcuts for lightning-fast decisions.
+
+### Making Decisions
+![Decisions Marked](screenshots/05-decisions-marked.png)
+
+Mark images as Keep (green) or Trash (red). Decisions are saved instantly and persist across sessions.
+
+**See [DEMO.md](DEMO.md) for a complete visual walkthrough of the entire workflow.**
+
 ## Quick Start (POC)
 
 > **Note:** This is a basic setup for POC testing. Production deployment will be streamlined in future releases.
