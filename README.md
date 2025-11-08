@@ -50,9 +50,22 @@ Perfect for users managing photo libraries who want Czkawka's powerful scanning 
 
 6. **Scan for duplicates:** Enter `/photos` in the scan form and click "Scan for Duplicates"
 
-> **⚠️ Important:** Only scan directories that are mounted in the Docker container. Scanning other paths (e.g., `/usr`, `/etc`) will find duplicates but images cannot be displayed in the web UI. Always scan mounted volumes like `/photos`.
+## Important Notes
+
+> **⚠️ Scanning Limitations:** Only scan directories that are mounted in the Docker container. Scanning other paths (e.g., `/usr`, `/etc`) will find duplicates but images cannot be displayed in the web UI. Always scan mounted volumes like `/photos`.
 >
 > *This limitation will be addressed post-POC with proper path validation and security restrictions.*
+
+> **⚠️ Rescanning Behavior:** Rescanning a directory will **DELETE ALL previous scan data** including:
+> - All duplicate groups (reviewed and pending)
+> - Keep/Trash decisions you've made
+> - Group history and metadata
+>
+> **Recommendation:** Complete your current review session and use "Move to Trash" to save your decisions before rescanning.
+>
+> **Note:** Files already moved to `/trash` are safe, but the link to which scan found them will be lost.
+>
+> *Post-POC: Scan history and decision preservation will be implemented.*
 
 ## Keyboard Shortcuts
 
@@ -82,8 +95,19 @@ Perfect for users managing photo libraries who want Czkawka's powerful scanning 
 For testing purposes, you can use the included script to download sample duplicate images:
 
 ```bash
+# Download with defaults (70 unique images, 6 copies each)
 ./scripts/download-images.sh
+
+# Custom configuration
+./scripts/download-images.sh --unique=50 --copies=3
+
+# Show help
+./scripts/download-images.sh --help
 ```
+
+**Options:**
+- `--unique NUM` - Number of unique images to download (default: 70)
+- `--copies NUM` - Number of copies per image (default: 6, use 0 for no copies)
 
 **Prerequisites:**
 - [ImageMagick](https://imagemagick.org/script/download.php) must be installed (used for image validation)
