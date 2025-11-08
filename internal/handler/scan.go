@@ -90,10 +90,10 @@ func (h *Handler) ScanDirectory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Clear pending data
-	if err := h.store.DeletePendingImages(); err != nil {
+	if err := h.store.DeleteAllImages(); err != nil {
 		http.Error(
 			w,
-			fmt.Sprintf("error deleting pending images: %v", err),
+			fmt.Sprintf("error clearing previous scan data: %v", err),
 			http.StatusInternalServerError)
 		return
 	}

@@ -238,15 +238,15 @@ func moveImageToTrash(image ImageToTrash, timestamp string) (string, error) {
 	return destPath, nil
 }
 
-func (s *Storage) DeletePendingImages() error {
-	_, err := s.db.Exec("DELETE FROM images WHERE action = 'pending'")
+func (s *Storage) DeleteAllImages() error {
+	_, err := s.db.Exec("DELETE FROM images")
 	if err != nil {
 		return fmt.Errorf("failed to delete pending images %w", err)
 	}
 
-	_, err = s.db.Exec("DELETE FROM image_groups WHERE id NOT IN (SELECT DISTINCT group_id FROM images)")
+	_, err = s.db.Exec("DELETE FROM image_groups")
 	if err != nil {
-		return fmt.Errorf("failed to delete image groups with no images in the images table %w", err)
+		return fmt.Errorf("failed to delete image groups %w", err)
 	}
 	return nil
 }

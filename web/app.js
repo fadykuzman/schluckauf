@@ -1,5 +1,6 @@
 let selectedImageIndex = null
 let currentGroupIndex = -1
+let hasDecisions = false
 
 function selectImage(index) {
   document.querySelectorAll('.image-item').forEach(item => {
@@ -256,6 +257,7 @@ async function updateFileActionById(groupId, fileId, action) {
         action: action
       })
     })
+    hasDecisions = true
     loadGroupsStatus()
   } catch (error) {
     applyActionState(duplicateImage, previousAction)
@@ -293,6 +295,7 @@ function setupTrashButton() {
 
       if (response.movedCount > 0) {
         showSuccess(`Successfully moved ${response.movedCount} of ${response.totalCount} to trash`)
+        hasDecisions = false
       }
 
       if (response.failedCount > 0) {
@@ -421,6 +424,20 @@ function setupScanForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault()
 
+    const stats = await fetchJSON('/api/groups/stats')
+
+    if (stats.decided > 0) {
+      const confirmed = confirm(
+        `Warning: Rescanning will clear all ${stats.decided} decided groups and any pending decisions.\n\n` +
+        `Consider using "Move to Trash" button first to save your work.\n\n` +
+        `Continue with scan?`
+      )
+
+      if (!confirmed) {
+        return
+      }
+    }
+
     const directory = input.value.trim()
     if (!directory) {
       showError('Please enter a directory path')
@@ -440,6 +457,7 @@ function setupScanForm() {
 
       await loadGroups()
       await loadGroupsStatus()
+      hasDecisions = false
     } catch (error) {
       showError('Scan failed ' + error.message)
     } finally {
