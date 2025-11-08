@@ -96,6 +96,20 @@ For testing purposes, you can use the included script to download sample duplica
 - **CLI Integration:** Czkawka v10.0.0 (bundled in Docker image)
 - **Deployment:** Docker + Docker Compose
 
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for planned features and development phases.
+
+**Current focus:** Phase 1 - Media file management (similar videos, duplicate music)
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- How to report bugs and request features
+- Development setup instructions
+- Code style guidelines
+- Pull request process
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
