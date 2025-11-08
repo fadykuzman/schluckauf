@@ -360,6 +360,12 @@ function setupKeyboardShortcuts() {
         updateFileActionById(groupId, fileId, "trash")
       }
     } else if (key === 'escape') {
+      const helpModal = document.getElementById('help-modal')
+      if (!helpModal.hidden) {
+        e.preventDefault
+        toggleHelpModal()
+        return
+      }
       e.preventDefault()
       selectImage(null)
     }
