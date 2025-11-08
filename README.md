@@ -50,6 +50,10 @@ Perfect for users managing photo libraries who want Czkawka's powerful scanning 
 
 6. **Scan for duplicates:** Enter `/photos` in the scan form and click "Scan for Duplicates"
 
+> **⚠️ Important:** Only scan directories that are mounted in the Docker container. Scanning other paths (e.g., `/usr`, `/etc`) will find duplicates but images cannot be displayed in the web UI. Always scan mounted volumes like `/photos`.
+>
+> *This limitation will be addressed post-POC with proper path validation and security restrictions.*
+
 ## Keyboard Shortcuts
 
 ### Navigation
